@@ -55,6 +55,22 @@ const RecipeWidget = (props) => {
     setShowAlert(true);
   };
 
+  switch (item.name) {
+    case "Crema Catalana":
+    case "Crema catalana":
+      itemName = "Каталунски крем";
+      break;
+    case "Италиански тирамису":
+      itemName = "Италианско тирамису";
+      break;
+    case "Ягодов сорбет":
+      itemName = "Ягодово сорбе";
+      break;
+    default:
+      // If the item name doesn't match any of the cases above, keep the original name
+      break;
+  }
+
   const imageStyles = [styles.fullImage, imageStyle];
   const cardContainer = [styles.card, styles.shadow, style];
   const imgContainer = [styles.imageContainer, styles.shadow];
@@ -82,6 +98,40 @@ const RecipeWidget = (props) => {
         <Text size={20} style={styles.cardTitle}>
           {item.name}
         </Text>
+        <Text size={15} style={styles.cardTitle} bold>
+          {`Грамаж: ${item.totals.grams}г.`}
+        </Text>
+        <Block>
+          <Block
+            style={{
+              flexDirection: "row",
+              marginTop: 10,
+              gap: 33
+            }}
+          >
+            <Text size={12} color={"#8c8bfc"} bold>
+              {`Калории: ${item.totals.calories} `}
+            </Text>
+            <Text size={12} color={"#8c8bfc"} bold>
+              {`Протеин: ${item.totals.protein}г.`}
+            </Text>
+          </Block>
+          <Block
+            style={{
+              flexDirection: "row",
+              marginTop: 5,
+              gap: 30
+            }}
+          >
+            <Text size={12} color={"#8c8bfc"} bold>
+              {`Мазнини: ${item.totals.fat}г. `}
+            </Text>
+            <Text size={12} color={"#8c8bfc"} bold>
+              {`Въглехидрати: ${item.totals.carbohydrates}г.`}
+            </Text>
+          </Block>
+        </Block>
+
         <TouchableOpacity onPress={handleIngredientsPress}>
           <View style={styles.button}>
             <Text style={styles.buttonText}>Начин на приготвяне</Text>
