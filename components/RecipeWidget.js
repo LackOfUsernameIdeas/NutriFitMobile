@@ -88,7 +88,7 @@ const RecipeWidget = (props) => {
               <Icon
                 name={like ? "heart" : "heart-outline"}
                 size={16}
-                color="red"
+                color="#9a99ff"
               />
             </View>
           </TouchableOpacity>

@@ -9,6 +9,7 @@ import {
 } from "react-native";
 import { Block, Text, Checkbox } from "galio-framework";
 import RecipeWidget from "../components/RecipeWidget";
+import { HSeparator } from "../components/Separator";
 import { getAuth } from "firebase/auth";
 import DailyCalorieRequirements from "./DailyCalorieRequirements";
 import { Card } from "../components";
@@ -1021,6 +1022,7 @@ class MealPlanner extends React.Component {
                   </Text>
                 </TouchableOpacity>
               </View>
+              <HSeparator />
               <>
                 {this.state.favoriteMealsList &&
                   this.state.favoriteMealsList.trim() !== "" &&

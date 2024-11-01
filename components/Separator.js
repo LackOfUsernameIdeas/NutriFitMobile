@@ -1,13 +1,15 @@
-import { Flex } from "galio-framework";
 import React from "react";
+import { View } from "react-native";
 
 const HSeparator = (props) => {
   const { variant, size, color, ...rest } = props;
   return (
-    <Flex
-      h={size ? size : "1px"}
-      w="100%"
-      bg={color ? color : "rgba(135, 140, 189, 0.3)"}
+    <View
+      style={{
+        height: size ? size : 1,
+        width: "100%",
+        backgroundColor: color ? color : "rgba(135, 140, 189, 0.3)"
+      }}
       {...rest}
     />
   );
@@ -15,7 +17,15 @@ const HSeparator = (props) => {
 
 const VSeparator = (props) => {
   const { variant, ...rest } = props;
-  return <Flex w="1px" bg="rgba(135, 140, 189, 0.3)" {...rest} />;
+  return (
+    <View
+      style={{
+        width: 1,
+        backgroundColor: "rgba(135, 140, 189, 0.3)"
+      }}
+      {...rest}
+    />
+  );
 };
 
 export { HSeparator, VSeparator };
