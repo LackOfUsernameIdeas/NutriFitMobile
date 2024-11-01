@@ -1055,8 +1055,8 @@ class MealPlanner extends React.Component {
                       : 25
                   }
                   color="rgba(135, 140, 189, 0.3)"
-                  fontSize={20} // Adjust fontSize according to your need
-                  onPress={this.toggleFavouriteMeals} // Use onPress for text to be clickable
+                  fontSize={20}
+                  onPress={this.toggleFavouriteMeals}
                 >
                   Вижте вашите любими храни
                 </Text>
