@@ -7,7 +7,7 @@ import {
   TextInput,
   ActivityIndicator
 } from "react-native";
-import { Block, Text } from "galio-framework";
+import { Block, Text, Checkbox } from "galio-framework";
 import RecipeWidget from "../components/RecipeWidget";
 import { getAuth } from "firebase/auth";
 import DailyCalorieRequirements from "./DailyCalorieRequirements";
@@ -17,8 +17,10 @@ import MacroNutrients from "./MacroNutrients";
 import CuisineDropdown from "../components/Dropdown";
 import { Ionicons } from "@expo/vector-icons";
 import { savePreferences, saveMealPlan } from "../database/setFunctions";
+import { fetchFavouriteMealsForUser } from "../database/getFunctions";
 import Deviations from "./Deviations";
 import InfoBoxLevels from "../components/InfoBoxLevels";
+import FavoriteMealsModal from "../components/FavouriteMealsModal";
 
 class MealPlanner extends React.Component {
   constructor(props) {
@@ -52,7 +54,9 @@ class MealPlanner extends React.Component {
       isDailyCaloryLoading: true,
       currentPage: 0,
       itemsPerPage: 5,
-      useFavoritesForPlan: false
+      useFavoritesForPlan: false,
+      showFavouriteMeals: false,
+      favoriteMealsList: ""
     };
   }
 
@@ -65,7 +69,7 @@ class MealPlanner extends React.Component {
       // Проверява дали има активен потребител.
       if (user) {
         // Актуализира се състоянието с текущия потребител.
-        this.setState({ currentUser: user });
+        this.setState({ currentUser: user }, this.loadFavouriteMeals);
       } else {
         // В случай на липса на потребител, състоянието се актуализира до нулево.
         this.setState({ currentUser: null });
@@ -292,7 +296,25 @@ class MealPlanner extends React.Component {
     }));
   };
 
-  handleFavoritesCheckboxChange = () => {};
+  toggleFavouriteMeals = () =>
+    this.setState({ showFavouriteMeals: !this.state.showFavouriteMeals });
+  handleFavoritesCheckboxChange = () =>
+    this.setState({ useFavoritesForPlan: !this.state.useFavoritesForPlan });
+
+  loadFavouriteMeals = async () => {
+    try {
+      const userId = this.state.currentUser?.uid;
+      if (userId) {
+        const favoriteMeals = await fetchFavouriteMealsForUser(userId);
+        // const favoriteMeals =
+        //   "Летна салата с рукола, Пилешки гърди със зеленчуци на пара, Тиквички с рикота, Гаспачо, Салата с червена леща, Испанска супа с бял боб и спанак, Зеленчуков омлет, Шопска салата, Зърнена каша с плодове, Овчарска салата, Пилешко с гъби";
+        const formattedMealsList = favoriteMeals.join(", ");
+        this.setState({ favoriteMealsList: formattedMealsList });
+      }
+    } catch (error) {
+      console.error("Error fetching favorite meals:", error);
+    }
+  };
 
   render() {
     // Обект, който съдържа преводите на кухните от английски на български.
@@ -355,7 +377,11 @@ class MealPlanner extends React.Component {
       this.state.userPreferences.Carbohydrates
     }). Никога не превишавайте или намалявайте предоставените лимити и се УВЕРЕТЕ, че калориите и мазнините ВИНАГИ са същите като предоставените лимити. 
       Осигурете точността на количествата, като същевременно се придържате към лимитите. 
-      Уверете се, че предоставените от вас хранения се различават от тези, които сте предоставили в предишни заявки. Давай винаги нови и вкусни храни, така че винаги да се създаде уникално и разнообразно меню.
+    ${
+      this.state.useFavoritesForPlan
+        ? `Уверете се, че при генериране използвате САМО тези храни: ${this.state.favoriteMealsList} `
+        : "Уверете се, че предоставените от вас хранения се различават от тези, които сте предоставили в предишни заявки. Давай винаги нови и вкусни храни, така че винаги да се създаде уникално и разнообразно меню."
+    }
       Експортирайте в JSON ТОЧНО КАТО ПРЕДОСТАВЕНАТА СТРУКТУРА в съдържанието на този заявка, без да добавяте 'json' ключова дума с обратни кавички. 
       Отговорът трябва да бъде чист JSON, нищо друго. Това означава, че вашият отговор не трябва да започва с 'json*backticks*{data}*backticks*' или '*backticks*{data}*backticks*'.
       Създайте ми дневно меню с ниско съдържание на мазнини, включващо едно ястие за закуска, три за обяд (третото трябва да е десерт) и две за вечеря (второто да бъде десерт). 
@@ -543,7 +569,6 @@ class MealPlanner extends React.Component {
           throw new Error("Failed to generate meal plan");
         }
         const responseData = await response.json();
-        console.log("responseData: ", responseData);
         const responseJson = responseData.choices[0].message.content;
         // Process the data returned by OpenAI API
         const unescapedData = responseJson
@@ -552,9 +577,7 @@ class MealPlanner extends React.Component {
           .replace(/^```([\s\S]*?)```$/, "$1")
           .replace(/^'|'$/g, "") // Remove single quotes at the beginning and end
           .trim();
-        console.log("unescapedData: ", unescapedData);
         const escapedData = decodeURIComponent(unescapedData);
-        console.log("escapedData: ", escapedData);
 
         const data = JSON.parse(escapedData);
 
@@ -998,6 +1021,49 @@ class MealPlanner extends React.Component {
                   </Text>
                 </TouchableOpacity>
               </View>
+              <>
+                {this.state.favoriteMealsList &&
+                  this.state.favoriteMealsList.trim() !== "" &&
+                  this.state.favoriteMealsList.split(", ").length >= 5 && (
+                    <Block mt={50}>
+                      <Block
+                        style={{
+                          flexDirection: "row",
+                          alignItems: "center",
+                          justifyContent: "center"
+                        }}
+                      >
+                        <Text style={{ marginRight: 10, flex: 1 }}>
+                          Създаване на хранителен план от вашите любими храни?
+                        </Text>
+                        <Checkbox
+                          style={{ marginLeft: 8 }}
+                          isChecked={this.state.useFavoritesForPlan}
+                          onChange={this.handleFavoritesCheckboxChange}
+                        />
+                      </Block>
+                    </Block>
+                  )}
+              </>
+              <Block style={{ alignItems: "center", justifyContent: "center" }}>
+                <Text
+                  mt={
+                    !(this.state.favoriteMealsList.split(", ").length >= 5)
+                      ? 50
+                      : 25
+                  }
+                  color="rgba(135, 140, 189, 0.3)"
+                  fontSize={20} // Adjust fontSize according to your need
+                  onPress={this.toggleFavouriteMeals} // Use onPress for text to be clickable
+                >
+                  Вижте вашите любими храни
+                </Text>
+              </Block>
+              <FavoriteMealsModal
+                showModal={this.state.showFavouriteMeals}
+                toggleModal={this.toggleFavouriteMeals}
+                favouriteMeals={this.state.favoriteMealsList}
+              />
             </Card>
           )}
           {isLoading ? (
