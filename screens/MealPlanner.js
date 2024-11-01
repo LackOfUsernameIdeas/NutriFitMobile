@@ -51,7 +51,8 @@ class MealPlanner extends React.Component {
       isLoading: false,
       isDailyCaloryLoading: true,
       currentPage: 0,
-      itemsPerPage: 5
+      itemsPerPage: 5,
+      useFavoritesForPlan: false
     };
   }
 
@@ -291,6 +292,8 @@ class MealPlanner extends React.Component {
     }));
   };
 
+  handleFavoritesCheckboxChange = () => {};
+
   render() {
     // Обект, който съдържа преводите на кухните от английски на български.
     const cuisineTranslation = {
@@ -510,7 +513,7 @@ class MealPlanner extends React.Component {
           isLoading: true
         });
         // Key
-        const secret = process.env.SECRET_OPEN;
+        const secret = process.env.EXPO_PUBLIC_OPENAI_API_KEY;
         // Изпраща заявка към OpenAI API за генериране на план за хранене.
         const response = await fetch(
           "https://api.openai.com/v1/chat/completions",
@@ -540,10 +543,18 @@ class MealPlanner extends React.Component {
           throw new Error("Failed to generate meal plan");
         }
         const responseData = await response.json();
+        console.log("responseData: ", responseData);
         const responseJson = responseData.choices[0].message.content;
-        // Декодира и обработва отговора от OpenAI API.
-        const unescapedData = responseJson;
+        // Process the data returned by OpenAI API
+        const unescapedData = responseJson
+          .replace(/^```json([\s\S]*?)```$/, "$1")
+          .replace(/^```JSON([\s\S]*?)```$/, "$1")
+          .replace(/^```([\s\S]*?)```$/, "$1")
+          .replace(/^'|'$/g, "") // Remove single quotes at the beginning and end
+          .trim();
+        console.log("unescapedData: ", unescapedData);
         const escapedData = decodeURIComponent(unescapedData);
+        console.log("escapedData: ", escapedData);
 
         const data = JSON.parse(escapedData);
 
@@ -961,7 +972,7 @@ class MealPlanner extends React.Component {
                 />
                 <TextInput
                   placeholder="Какво да не се включва"
-                  value={userPreferences.Exclude}
+                  value={"Какво да не се включва"}
                   onChangeText={(text) =>
                     this.handleInputChange("Exclude", text)
                   }
