@@ -1,6 +1,5 @@
 import React, { Component } from "react";
 import { Text, StyleSheet, View, Pressable } from "react-native";
-import InfoBox from "../components/InfoBoxLevels";
 import InfoBoxMacroNutrients from "../components/InfoBoxMacroNutrients";
 
 class MacroNutrients extends Component {
@@ -13,12 +12,20 @@ class MacroNutrients extends Component {
     };
   }
 
+  /**
+   * Обработва клик върху диета, като задава избраната диета и показва tooltip със съответната информация.
+   * @param {Object} diet - Обект, съдържащ информация за избраната диета.
+   */
   handleDietClicked = (diet) => {
-    this.setState({ selectedDiet: diet.name }); // Update selectedDiet in state
+    this.setState({ selectedDiet: diet.name });
     this.props.onDietSelect(diet.protein, diet.fat, diet.carbs, diet.name);
     this.showTooltip(diet);
   };
 
+  /**
+   * Показва tooltip с информация за конкретния избор на диета.
+   * @param {Object} item - Обект, съдържащ данни за името на диетата и стойностите на макронутриентите.
+   */
   showTooltip = (item) => {
     this.setState({
       tooltipVisible: true,
@@ -26,6 +33,9 @@ class MacroNutrients extends Component {
     });
   };
 
+  /**
+   * Скрива tooltip-а.
+   */
   hideTooltip = () => {
     this.setState({ tooltipVisible: false });
   };
@@ -33,6 +43,7 @@ class MacroNutrients extends Component {
   render() {
     const { macroNutrientsArray, activityLevel, selectedGoal } = this.props;
 
+    /** Съхранява данни за таблицата с макронутриенти на базата на избрания активност и цел. */
     let tableData = [];
     if (macroNutrientsArray[activityLevel - 1]) {
       macroNutrientsArray[activityLevel - 1].goals.forEach((item) => {
@@ -138,7 +149,7 @@ const styles = StyleSheet.create({
     borderBottomColor: "black",
     paddingVertical: 10,
     paddingHorizontal: 5,
-    borderColor: "black", // Add this line
+    borderColor: "black",
     borderWidth: 1
   },
   pressedRow: {

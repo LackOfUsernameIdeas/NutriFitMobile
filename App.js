@@ -8,7 +8,7 @@ import { NavigationContainer } from "@react-navigation/native";
 import { initializeAuth, getReactNativePersistence } from "firebase/auth";
 import ReactNativeAsyncStorage from "@react-native-async-storage/async-storage";
 import { firebaseConfig } from "./database/connection";
-// Before rendering any navigation stack
+// Преди render на какъвто и да е navigation stack
 import { enableScreens } from "react-native-screens";
 enableScreens();
 
@@ -17,14 +17,14 @@ import { Images, nutriTheme } from "./constants";
 import { initializeApp } from "firebase/app";
 import { getFirestore } from "firebase/firestore";
 
-// Initialize Firebase
+// Инициализация на Firebase
 export const app = initializeApp(firebaseConfig);
 export const db = getFirestore(app);
 export const auth = initializeAuth(app, {
   persistence: getReactNativePersistence(ReactNativeAsyncStorage)
 });
 
-// cache app images
+// Кеширане на изображения за приложението
 const assetImages = [
   Images.Onboarding,
   Images.LogoOnboarding,
@@ -33,8 +33,8 @@ const assetImages = [
   Images.iOSLogo,
   Images.androidLogo
 ];
-// cache product images
 
+// Функция за кеширане на изображенията
 function cacheImages(images) {
   return images.map((image) => {
     if (typeof image === "string") {
@@ -51,26 +51,27 @@ export default function App() {
   useEffect(() => {
     async function prepare() {
       try {
-        // Load Resources
+        // Зареждане на ресурсите
         await _loadResourcesAsync();
-        // Pre-load fonts, make any API calls you need to do here
         await Font.loadAsync({
           NutriExtra: require("./assets/font/nutri.ttf")
         });
       } catch (e) {
         console.warn(e);
       } finally {
-        // Tell the application to render
+        // Сигнал към приложението, че може да се рендерира
         setAppIsReady(true);
       }
     }
     prepare();
   }, []);
 
+  // Асинхронно зареждане на ресурсите
   const _loadResourcesAsync = async () => {
     return Promise.all([...cacheImages(assetImages)]);
   };
 
+  // Скриване на splash екрана след зареждане на приложението
   const onLayoutRootView = useCallback(async () => {
     if (appIsReady) {
       await SplashScreen.hideAsync();

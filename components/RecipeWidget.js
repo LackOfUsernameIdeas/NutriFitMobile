@@ -15,7 +15,6 @@ const RecipeWidget = (props) => {
   const [like, setLike] = useState(false);
   const [showAlert, setShowAlert] = useState(false);
 
-  // Check if the meal is already favorited by the user
   useEffect(() => {
     const checkFavouriteMeals = async () => {
       try {
@@ -32,7 +31,6 @@ const RecipeWidget = (props) => {
     checkFavouriteMeals();
   }, [item.name]);
 
-  // Toggle favorite status and update the database
   const handleFavoriteToggle = async () => {
     const userId = getAuth().currentUser?.uid;
     if (!userId) return;
@@ -67,7 +65,6 @@ const RecipeWidget = (props) => {
       itemName = "Ягодово сорбе";
       break;
     default:
-      // If the item name doesn't match any of the cases above, keep the original name
       break;
   }
 

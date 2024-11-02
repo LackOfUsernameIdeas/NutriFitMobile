@@ -15,7 +15,7 @@ import { fetchAdditionalUserData } from "../database/getFunctions";
 import { getAuth, signOut } from "firebase/auth";
 
 const { width, height } = Dimensions.get("screen");
-
+// Главен компонент
 class UserMeasurements extends React.Component {
   constructor(props) {
     super(props);
@@ -32,10 +32,12 @@ class UserMeasurements extends React.Component {
     };
   }
 
+  // Извиква се при зареждане на компонента и извлича пола на потребителя
   componentDidMount() {
     this.fetchGender();
   }
 
+  // Извлича информация за пола на потребителя от базата данни
   fetchGender = async () => {
     const userData = await fetchAdditionalUserData(getAuth().currentUser.uid);
     if (userData) {
@@ -43,6 +45,7 @@ class UserMeasurements extends React.Component {
     }
   };
 
+  // Извиква функция за записване на всички данни на потребителя
   triggerFetchAndSaveAllData = async () => {
     const uid = getAuth().currentUser.uid;
     const { height, age, weight, gender, neck, waist, hip } = this.state;
@@ -83,6 +86,7 @@ class UserMeasurements extends React.Component {
     }
   };
 
+  // Запазва данни за потребителя в базата
   saveUserData = async () => {
     const uid = getAuth().currentUser.uid;
     const { height, age, weight, neck, waist, hip } = this.state;
@@ -114,6 +118,7 @@ class UserMeasurements extends React.Component {
     }
   };
 
+  // Генерира статистика, базирана на въведените от потребителя данни
   generateStats = async () => {
     this.setState({ isLoading: true });
 
@@ -131,6 +136,7 @@ class UserMeasurements extends React.Component {
     }
   };
 
+  // Валидира данните на потребителя (височина, възраст и др.)
   validateUserData = (userData) => {
     const { height, age, weight, neck, waist, hip } = userData;
 
@@ -151,6 +157,7 @@ class UserMeasurements extends React.Component {
     );
   };
 
+  // Handle-ва потвърждаването на данните от потребителя
   handleConfirm = async () => {
     const { height, age, weight, neck, waist, hip } = this.state;
 
@@ -188,10 +195,10 @@ class UserMeasurements extends React.Component {
     } catch (error) {
       console.error("Error saving additional user data:", error);
     } finally {
-      this.setState({ isLoading: false }); // Set loading state to false
+      this.setState({ isLoading: false });
     }
   };
-
+  // Handle-ва натискането на бутона за връщане и излизане от акаунта
   handleBackButtonPress = async () => {
     const { navigation } = this.props;
     try {
@@ -446,7 +453,7 @@ const styles = StyleSheet.create({
   },
   createButton: {
     width: width * 0.5,
-    marginBottom: 20, // Increased marginBottom
+    marginBottom: 20,
     borderRadius: 12
   },
   backButton: {

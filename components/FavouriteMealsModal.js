@@ -24,7 +24,7 @@ class FavoriteMealsModal extends React.Component {
         ? this.props.favouriteMeals.split(", ").map((meal) => ({
             name: meal,
             liked: true,
-            scaleAnim: new Animated.Value(1) // Add scale animation value for each meal
+            scaleAnim: new Animated.Value(1)
           }))
         : []
     };
@@ -34,11 +34,9 @@ class FavoriteMealsModal extends React.Component {
     const userId = getAuth().currentUser?.uid;
     if (!userId) return;
 
-    // Find the meal and update its liked state and animate
     this.setState((prevState) => {
       const updatedMeals = prevState.favouriteMeals.map((meal) => {
         if (meal.name === mealName) {
-          // Trigger animation when the heart is toggled
           this.startAnimation(meal.scaleAnim);
           return { ...meal, liked: !meal.liked };
         }
@@ -62,7 +60,6 @@ class FavoriteMealsModal extends React.Component {
   };
 
   startAnimation = (scaleAnim) => {
-    // Trigger scale animation
     Animated.sequence([
       Animated.timing(scaleAnim, {
         toValue: 1.5,

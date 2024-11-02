@@ -996,7 +996,6 @@ class MealPlanner extends React.Component {
                 />
                 <TextInput
                   placeholder="Какво да не се включва"
-                  value={"Какво да не се включва"}
                   onChangeText={(text) =>
                     this.handleInputChange("Exclude", text)
                   }
@@ -1027,36 +1026,56 @@ class MealPlanner extends React.Component {
                 {this.state.favoriteMealsList &&
                   this.state.favoriteMealsList.trim() !== "" &&
                   this.state.favoriteMealsList.split(", ").length >= 5 && (
-                    <Block mt={50}>
+                    <Block>
                       <Block
                         style={{
                           flexDirection: "row",
                           alignItems: "center",
-                          justifyContent: "center"
+                          justifyContent: "center",
+                          padding: 10
                         }}
                       >
-                        <Text style={{ marginRight: 10, flex: 1 }}>
+                        <Text
+                          style={{
+                            marginRight: 10,
+                            flex: 1,
+                            fontSize: 16,
+                            color: "#333",
+                            fontWeight: "bold",
+                            textAlign: "center"
+                          }}
+                        >
                           Създаване на хранителен план от вашите любими храни?
                         </Text>
                         <Checkbox
                           style={{ marginLeft: 8 }}
                           isChecked={this.state.useFavoritesForPlan}
                           onChange={this.handleFavoritesCheckboxChange}
+                          color="#8c8bfc"
                         />
                       </Block>
                     </Block>
                   )}
               </>
-              <Block style={{ alignItems: "center", justifyContent: "center" }}>
+              <Block
+                style={{
+                  alignItems: "center",
+                  justifyContent: "center"
+                }}
+              >
                 <Text
                   mt={
                     !(this.state.favoriteMealsList.split(", ").length >= 5)
                       ? 50
                       : 25
                   }
-                  color="rgba(135, 140, 189, 0.3)"
+                  color="rgba(135, 140, 189, 0.7)"
                   fontSize={20}
                   onPress={this.toggleFavouriteMeals}
+                  style={{
+                    textDecorationLine: "underline",
+                    fontWeight: "bold"
+                  }}
                 >
                   Вижте вашите любими храни
                 </Text>

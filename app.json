@@ -7,7 +7,7 @@
       "ios",
       "android"
     ],
-    "version": "1.7.1",
+    "version": "3.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "splash": {
@@ -25,15 +25,16 @@
       "supportsTablet": true,
       "bundleIdentifier": "com.lackofusernameideas.nutrifitmobile"
     },
-    "description": "Track your bodily change and create meal plans with the power of AI using NutriFit!",
+    "description": "Бъдете винаги във форма и в оптимално здравословно състояние с помощта на изкуствен интелект!",
     "extra": {
       "eas": {
-        "projectId": "9e21f205-1593-44b3-b8cd-2dbcc2c7121c"
+        "projectId": "f4acf74a-ca05-4769-970c-8c709b944a14"
       }
     },
     "android": {
-      "package": "com.lackofusernameideas.nutrifitmobile"
+      "package": "com.lackofusernameideas.nutrifitmobile",
+      "versionCode": 3
     },
-    "owner": "nutri3"
+    "owner": "nutri5"
   }
 }

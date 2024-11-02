@@ -14,6 +14,7 @@ import { getAuth, signInWithEmailAndPassword } from "firebase/auth";
 
 const { width, height } = Dimensions.get("screen");
 
+// Главен компонент
 class LogIn extends React.Component {
   constructor(props) {
     super(props);
@@ -29,11 +30,11 @@ class LogIn extends React.Component {
     const auth = getAuth();
     signInWithEmailAndPassword(auth, email, password)
       .then(() => {
-        // Handle successful sign-in
+        // Успешно влизане и препращане към UserMeasurements
         this.props.navigation.navigate("UserMeasurements");
       })
       .catch((error) => {
-        // Handle sign-in errors
+        // Грешка при sign-in
         let errorMessage;
         switch (error.code) {
           case "auth/invalid-email":
@@ -63,7 +64,7 @@ class LogIn extends React.Component {
   };
 
   render() {
-    const { navigation } = this.props; // Assuming you're using React Navigation
+    const { navigation } = this.props;
 
     return (
       <Block flex middle>
@@ -230,7 +231,7 @@ const styles = StyleSheet.create({
   },
   createButton: {
     width: width * 0.5,
-    marginBottom: 20, // Increased marginBottom
+    marginBottom: 20,
     borderRadius: 12
   },
   backButton: {

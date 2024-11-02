@@ -18,6 +18,7 @@ import {
 
 const { width, height } = Dimensions.get("screen");
 
+// Главен компонент
 class Register extends React.Component {
   constructor(props) {
     super(props);
@@ -34,25 +35,24 @@ class Register extends React.Component {
 
     createUserWithEmailAndPassword(auth, email, password)
       .then(() => {
-        // Handle successful registration
+        // Успешна регистрация
         console.log("User registered successfully!");
 
-        // Now let's log in the user
+        // Вкарва потребителя в профила му
         signInWithEmailAndPassword(auth, email, password)
           .then(() => {
-            // Handle successful sign-in
+            // Успешно влизнане
             console.log("User logged in successfully!");
-            // Redirect the user to the UserMeasurements
+            // Препраща потребителя на UserMeasurements
             this.props.navigation.navigate("UserMeasurements");
           })
           .catch((error) => {
-            // Handle sign-in errors
+            // Грешка при sign-in
             console.error("Error signing in after registration:", error);
-            // You might want to display an error message to the user here
           });
       })
       .catch((error) => {
-        // Handle registration errors
+        // Handle-ва грешки при регистрация
         let errorMessage;
         switch (error.code) {
           case "auth/invalid-email":
@@ -91,7 +91,7 @@ class Register extends React.Component {
   };
 
   render() {
-    const { navigation } = this.props; // Assuming you're using React Navigation
+    const { navigation } = this.props;
 
     return (
       <Block flex middle>
@@ -258,7 +258,7 @@ const styles = StyleSheet.create({
   },
   createButton: {
     width: width * 0.5,
-    marginBottom: 20, // Increased marginBottom
+    marginBottom: 20,
     borderRadius: 12
   },
   backButton: {

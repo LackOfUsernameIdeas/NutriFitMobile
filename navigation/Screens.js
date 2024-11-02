@@ -1,12 +1,9 @@
-import { Animated, Dimensions, Easing } from "react-native";
-// header for screens
-import { Header, Icon } from "../components";
-import React, { useEffect, useState } from "react"; // Add this line
-// drawer
+import { Dimensions } from "react-native";
+import { Header } from "../components";
+import React, { useEffect, useState } from "react";
 import MealPlanner from "../screens/MealPlanner";
 import Onboarding from "../screens/Onboarding";
 import Register from "../screens/Register";
-import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { createDrawerNavigator } from "@react-navigation/drawer";
 import { createStackNavigator } from "@react-navigation/stack";
 import { collection, onSnapshot } from "firebase/firestore";
@@ -21,6 +18,7 @@ const { width } = Dimensions.get("screen");
 const Stack = createStackNavigator();
 const Drawer = createDrawerNavigator();
 
+// Ландинг стак
 export default function OnboardingStack(props) {
   const [initializing, setInitializing] = useState(true);
   const [user, setUser] = useState(null);
@@ -32,9 +30,8 @@ export default function OnboardingStack(props) {
       if (initializing) setInitializing(false);
     });
 
-    // Cleanup function
     return () => {
-      subscriber(); // Unsubscribe from onAuthStateChanged
+      subscriber();
     };
   }, [initializing]);
 
@@ -80,6 +77,7 @@ export default function OnboardingStack(props) {
   );
 }
 
+// Главен стак
 function AppStack(props) {
   const [initializing, setInitializing] = useState(true);
   const [user, setUser] = useState(null);
@@ -100,19 +98,15 @@ function AppStack(props) {
       if (initializing) setInitializing(false);
     });
 
-    // Cleanup function
     return () => {
-      subscriber(); // Unsubscribe from onAuthStateChanged
-      // Additional cleanup for other listeners if needed
+      subscriber();
     };
   }, [initializing]);
 
-  // Function to handle data saved event
   const onDataSaved = () => {
     setHasMeasurementsForToday(true);
   };
 
-  // Listen for real-time updates on the user's document
   useEffect(() => {
     if (user) {
       const userDocKey = new Date().toISOString().slice(0, 10);
@@ -121,23 +115,20 @@ function AppStack(props) {
         (querySnapshot) => {
           querySnapshot.forEach((doc) => {
             if (doc.exists()) {
-              // Check if the document ID matches the current date
               if (doc.id === userDocKey) {
-                setUserDocData(doc.data()); // Update userDocData state
+                setUserDocData(doc.data());
               }
             }
           });
         }
       );
 
-      // Cleanup function
       return () => unsubscribe();
     }
   }, [user]);
 
   if (initializing) return null;
 
-  // Redirect to UserMeasurements if userDocData is null
   if (!hasMeasurementsForToday) {
     return (
       <Drawer.Navigator
@@ -166,7 +157,7 @@ function AppStack(props) {
             fontWeight: "normal"
           }
         }}
-        initialRouteName="UserMeasurements" // Navigate to UserMeasurements if data for today is missing
+        initialRouteName="UserMeasurements"
       >
         <Drawer.Screen
           name="UserMeasurements"
@@ -180,7 +171,6 @@ function AppStack(props) {
     );
   }
 
-  // Render MealPlanner if data for today exists
   return (
     <Drawer.Navigator
       style={{ flex: 1 }}

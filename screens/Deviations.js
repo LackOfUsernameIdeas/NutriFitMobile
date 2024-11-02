@@ -5,6 +5,7 @@ import { getAuth } from "firebase/auth";
 import { Card } from "../components";
 import { saveDeviations } from "../database/setFunctions";
 
+//Главен компонент
 class Deviations extends React.Component {
   constructor(props) {
     super(props);
@@ -13,10 +14,10 @@ class Deviations extends React.Component {
   async componentDidMount() {
     const { mealPlan, userPreferences, isPlanGeneratedWithOpenAI } = this.props;
 
-    // Calculate totals
+    // Калкулираме общи стойности
     const calculatedTotals = this.calculateMealTotals(mealPlan);
 
-    // Calculate deviations
+    // Калкулираме отклоненията
     const deviationsSavable = {
       calories: {
         deviation: calculatedTotals.calories - userPreferences.Calories,
@@ -61,7 +62,7 @@ class Deviations extends React.Component {
       }
     };
 
-    // Save deviations
+    // Запазваме отклоненията
     try {
       const uid = getAuth().currentUser.uid;
       await saveDeviations(
@@ -74,8 +75,12 @@ class Deviations extends React.Component {
     }
   }
 
+  /**
+   * Изчислява общите стойности на калории, протеини, мазнини и въглехидрати в плана за хранене.
+   * @param {Object} mealPlan - Обект, съдържащ различни ястия с хранителна информация за всяко.
+   * @returns {Object} Обект със стойности за общите калории, протеини, мазнини и въглехидрати.
+   */
   calculateMealTotals = (mealPlan) => {
-    // Initialize totals for the meal type
     const totals = {
       calories: 0,
       protein: 0,
@@ -83,14 +88,10 @@ class Deviations extends React.Component {
       carbohydrates: 0
     };
 
-    // Iterate over each meal type
     Object.entries(mealPlan).forEach(([mealType, meal]) => {
       if (mealType !== "totals") {
-        // Iterate over each food item in the meal type
         Object.values(meal).forEach((foodItem) => {
-          // Check if foodItem has totals property
           if (foodItem && foodItem.totals) {
-            // Add the nutrients of the food item to the totals for the day
             totals.calories += foodItem.totals.calories || 0;
             totals.protein += foodItem.totals.protein || 0;
             totals.fat += foodItem.totals.fat || 0;
@@ -105,7 +106,6 @@ class Deviations extends React.Component {
   render() {
     const { mealPlan, userPreferences, isPlanGeneratedWithOpenAI } = this.props;
 
-    // Calculate totals
     const calculatedTotals = this.calculateMealTotals(mealPlan);
 
     return (

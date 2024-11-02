@@ -1,7 +1,5 @@
 import React, { Component } from "react";
 import { Text, StyleSheet, View, TouchableOpacity } from "react-native";
-import Spinner from "react-native-loading-spinner-overlay";
-import { Card } from "../components";
 import { Block } from "galio-framework";
 
 class DailyCalorieRequirements extends Component {
@@ -9,11 +7,16 @@ class DailyCalorieRequirements extends Component {
     super(props);
     this.state = {
       selectedButtonIndex: null
-      //loading: true // Initially set loading to true
     };
   }
 
-  // Function to handle button click and update state with clicked calories
+  /**
+   * Обработва събитие при кликване върху бутон за калории, като обновява избрания индекс и задава целевите калории и цел.
+   * @param {number} index - Индекс на избрания бутон.
+   * @param {number} calories - Калории, свързани с избрания бутон.
+   * @param {string} goal - Цел, свързана с избрания бутон.
+   * @returns {void}
+   */
   handleCaloriesButtonClick = (index, calories, goal) => {
     this.setState({ selectedButtonIndex: index });
     this.props.onCaloriesSelect(calories);
@@ -59,7 +62,6 @@ class DailyCalorieRequirements extends Component {
         <TouchableOpacity
           style={[
             styles.button,
-            //styles.weightLossButton,
             this.state.selectedButtonIndex === 2
               ? { borderColor: "#9a99ff", backgroundColor: "#CFD2DB" }
               : null
@@ -233,15 +235,12 @@ const styles = StyleSheet.create({
     backgroundColor: "#FFFFFF"
   },
   weightLossButton: {
-    //backgroundColor: "#FF9800"
     backgroundColor: "#FF9800"
   },
   weightMaintainButton: {
-    //backgroundColor: "#2196F3"
     backgroundColor: "#2196F3"
   },
   weightGainButton: {
-    //backgroundColor: "#F44336"
     backgroundColor: "#F44336"
   },
   spinnerText: {
