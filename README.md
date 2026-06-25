@@ -15,22 +15,16 @@
 
 ## Architecture
 
-```
+````
 NutriFitMobile/
-├── screens/       # App screens (onboarding, auth, meal planner, measurements, deviations, etc.)
-├── components/    # Reusable UI building blocks (buttons, inputs, cards, tabs, widgets...)
-├── navigation/    # Stack, drawer and tab navigation setup
+
+├── screens/       # Onboarding, login/register, meal planner, user measurements,
+│                  # daily calorie requirements, macronutrients, AI deviation screens
+├── components/    # Shared, theme-aware UI building blocks (buttons, inputs, cards, tabs, widgets...)
+├── navigation/    # Auth-aware stack/drawer/tab navigators, gated by Firebase auth state
 ├── database/      # Firebase connection and Firestore get/set/delete helpers
 ├── constants/     # Theme, images, and shared utilities
 └── assets/        # Fonts, icons, and images
-```
-
-| Folder        | Role                                                                                                                              |
-| ------------- | --------------------------------------------------------------------------------------------------------------------------------- |
-| `screens/`    | Onboarding, login/register, meal planner, user measurements, daily calorie requirements, macronutrients, and AI deviation screens |
-| `components/` | Shared, theme-aware UI components used across screens                                                                             |
-| `navigation/` | Auth-aware stack/drawer/tab navigators, gated by Firebase auth state                                                              |
-| `database/`   | Firebase client config and Firestore read/write/delete functions                                                                  |
 
 > The mobile app shares the same backend API as the NutriFit web project (not included in this repository).
 
@@ -60,7 +54,7 @@ These files are excluded from version control and must exist locally before runn
 
 ```env
 EXPO_PUBLIC_OPENAI_API_KEY=your_openai_api_key
-```
+````
 
 ### `database/connection.js`
 
