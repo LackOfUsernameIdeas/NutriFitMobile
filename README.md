@@ -15,7 +15,7 @@
 
 ## Architecture
 
-````
+```
 NutriFitMobile/
 
 ├── screens/       # Onboarding, login/register, meal planner, user measurements,
@@ -27,6 +27,7 @@ NutriFitMobile/
 └── assets/        # Fonts, icons, and images
 
 > The mobile app shares the same backend API as the NutriFit web project (not included in this repository).
+```
 
 ---
 
@@ -54,7 +55,7 @@ These files are excluded from version control and must exist locally before runn
 
 ```env
 EXPO_PUBLIC_OPENAI_API_KEY=your_openai_api_key
-````
+```
 
 ### `database/connection.js`
 
