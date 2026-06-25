@@ -17,15 +17,12 @@
 
 ```
 NutriFitMobile/
-
-├── screens/       # Onboarding, login/register, meal planner, user measurements,
-│                  # daily calorie requirements, macronutrients, AI deviation screens
+├── screens/       # Onboarding, login/register, meal planner, user measurements, daily calorie requirements, macronutrients, AI deviation screens
 ├── components/    # Shared, theme-aware UI building blocks (buttons, inputs, cards, tabs, widgets...)
 ├── navigation/    # Auth-aware stack/drawer/tab navigators, gated by Firebase auth state
 ├── database/      # Firebase connection and Firestore get/set/delete helpers
 ├── constants/     # Theme, images, and shared utilities
 └── assets/        # Fonts, icons, and images
-
 ```
 
 > The mobile app shares the same backend API as the NutriFit web project (not included in this repository).
