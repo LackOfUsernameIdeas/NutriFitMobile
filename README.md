@@ -17,7 +17,7 @@
 
 ```
 NutriFitMobile/
-├── screens/       # Onboarding, login/register, meal planner, user measurements, daily calorie requirements, macronutrients, AI deviation screens
+├── screens/       # Onboarding, login/register, meal planner, user measurements
 ├── components/    # Shared, theme-aware UI building blocks (buttons, inputs, cards, tabs, widgets...)
 ├── navigation/    # Auth-aware stack/drawer/tab navigators, gated by Firebase auth state
 ├── database/      # Firebase connection and Firestore get/set/delete helpers
@@ -41,7 +41,7 @@ Node.js, Vertex AI (Gemini), Google Custom Search API
 
 **Tooling**
 
-Android Studio (Android emulator/build), Xcode (iOS, optional)
+Android Studio (Android emulator/build)
 
 ---
 
@@ -79,7 +79,7 @@ export const firebaseConfig = {
 ### 1. Install dependencies
 
 ```bash
-cd NutriFitMobile
+cd `NutriFitMobile main directory`
 npm i
 ```
 

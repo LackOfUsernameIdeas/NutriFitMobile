@@ -7,5 +7,5 @@ yarn.lock
 *.p12
 *.key
 *.mobileprovision
-database/
+database/connection.js
 .env
