@@ -26,8 +26,9 @@ NutriFitMobile/
 ├── constants/     # Theme, images, and shared utilities
 └── assets/        # Fonts, icons, and images
 
-> The mobile app shares the same backend API as the NutriFit web project (not included in this repository).
 ```
+
+> The mobile app shares the same backend API as the NutriFit web project (not included in this repository).
 
 ---
 
