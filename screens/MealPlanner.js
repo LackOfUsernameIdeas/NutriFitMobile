@@ -8,7 +8,6 @@ import {
   ActivityIndicator
 } from "react-native";
 import { Block, Text } from "galio-framework";
-import { EXPO_PUBLIC_OPENAI_API_KEY } from "@env";
 import RecipeWidget from "../components/RecipeWidget";
 import { getAuth } from "firebase/auth";
 import DailyCalorieRequirements from "./DailyCalorieRequirements";
@@ -424,6 +423,14 @@ class MealPlanner extends React.Component {
       }
     };
 
+    isValidJson = (jsonObject) => {
+      return (
+        jsonObject &&
+        jsonObject.breakfast &&
+        jsonObject.lunch &&
+        jsonObject.dinner
+      );
+    };
     /**
      * Генерира план за хранене с помощта на OpenAI модел.
      */
@@ -437,6 +444,8 @@ class MealPlanner extends React.Component {
           isLoading: true
         });
         console.log("fetching openai");
+        // Key
+        const secret = process.env.SECRET_OPEN;
         // Изпраща заявка към OpenAI API за генериране на план за хранене.
         const response = await fetch(
           "https://api.openai.com/v1/chat/completions",
@@ -444,7 +453,7 @@ class MealPlanner extends React.Component {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
-              Authorization: `Bearer ${EXPO_PUBLIC_OPENAI_API_KEY}`
+              Authorization: `Bearer ${secret}`
             },
             body: JSON.stringify({
               model: "gpt-4-0125-preview",
@@ -467,13 +476,17 @@ class MealPlanner extends React.Component {
         }
         console.log("res: ", response);
         const responseData = await response.json();
-
+        const responseJson = responseData.choices[0].message.content;
         // Декодира и обработва отговора от OpenAI API.
-        const unescapedData = responseData.choices[0].message.content;
+        const unescapedData = responseJson;
         const escapedData = decodeURIComponent(unescapedData);
         console.log("escapedData: ", escapedData);
 
         const data = JSON.parse(escapedData);
+
+        if (!isValidJson(data)) {
+          throw new Error("Invalid JSON structure");
+        }
 
         console.log("OPENAI: ", data);
 
@@ -612,26 +625,29 @@ class MealPlanner extends React.Component {
         );
 
         const responseData = await response.json();
+        const responseJson = responseData.aiResponse;
+        console.log("Response from backend:", responseJson);
 
-        console.log("Response from backend:", responseData.aiResponse);
-
-        // Преобразува отговора от бекенда в JSON формат и проверява за валидност.
-        const stringToRepair = responseData.aiResponse
+        const stringToRepair = responseJson
           .replace(/^```json([\s\S]*?)```$/, "$1")
           .replace(/^```JSON([\s\S]*?)```$/, "$1")
           .replace(/^'|'$/g, "")
           .trim();
-
         let jsonObject;
         try {
+          console.log("stringToRepair: ", stringToRepair);
           jsonObject = JSON.parse(stringToRepair);
           checkTotals(jsonObject);
+          console.log("jsonObject11111: ", jsonObject);
         } catch (parseError) {
           throw new Error("Invalid JSON response from the server");
         }
 
-        console.log("jsonObject: ", jsonObject);
+        if (!isValidJson(jsonObject)) {
+          throw new Error("Invalid JSON structure");
+        }
 
+        console.log("jsonObject: ", jsonObject);
         // Обект, който ще съдържа връзките към изображенията на ястията от плана за хранене, генериран с Gemini модела.
         const mealPlanImagesData = {
           breakfast: {

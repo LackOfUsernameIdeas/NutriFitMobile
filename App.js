@@ -7,13 +7,22 @@ import { Block, GalioProvider } from "galio-framework";
 import { NavigationContainer } from "@react-navigation/native";
 import { initializeAuth, getReactNativePersistence } from "firebase/auth";
 import ReactNativeAsyncStorage from "@react-native-async-storage/async-storage";
-import { app } from "./database/connection";
+import { firebaseConfig } from "./database/connection";
 // Before rendering any navigation stack
 import { enableScreens } from "react-native-screens";
 enableScreens();
 
 import Screens from "./navigation/Screens";
 import { Images, nutriTheme } from "./constants";
+import { initializeApp } from "firebase/app";
+import { getFirestore } from "firebase/firestore";
+
+// Initialize Firebase
+export const app = initializeApp(firebaseConfig);
+export const db = getFirestore(app);
+export const auth = initializeAuth(app, {
+  persistence: getReactNativePersistence(ReactNativeAsyncStorage)
+});
 
 // cache app images
 const assetImages = [
@@ -42,9 +51,6 @@ export default function App() {
   useEffect(() => {
     async function prepare() {
       try {
-        const auth = initializeAuth(app, {
-          persistence: getReactNativePersistence(ReactNativeAsyncStorage)
-        });
         // Load Resources
         await _loadResourcesAsync();
         // Pre-load fonts, make any API calls you need to do here

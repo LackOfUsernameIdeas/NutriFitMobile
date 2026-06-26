@@ -10,7 +10,7 @@ import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { createDrawerNavigator } from "@react-navigation/drawer";
 import { createStackNavigator } from "@react-navigation/stack";
 import { collection, onSnapshot } from "firebase/firestore";
-import { db } from "../database/connection";
+import { db } from "../App";
 import LogIn from "../screens/LogIn";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 import UserMeasurements from "../screens/UserMeasurements";

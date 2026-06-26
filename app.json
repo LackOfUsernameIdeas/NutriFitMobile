@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "NutriFit Mobile",
-    "slug": "nutrifit-mobile",
+    "slug": "nutrifitmobile",
     "privacy": "public",
     "platforms": [
       "ios",
@@ -22,8 +22,18 @@
       "**/*"
     ],
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.lackofusernameideas.nutrifitmobile"
     },
-    "description": "Track your bodily change and create meal plans with the power of AI using NutriFit!"
+    "description": "Track your bodily change and create meal plans with the power of AI using NutriFit!",
+    "extra": {
+      "eas": {
+        "projectId": "5c03a327-9690-4813-b692-f8a9e0ff2ed3"
+      }
+    },
+    "android": {
+      "package": "com.lackofusernameideas.nutrifitmobile"
+    },
+    "owner": "nutrifitmobile"
   }
 }

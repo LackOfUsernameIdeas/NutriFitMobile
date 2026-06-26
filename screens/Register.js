@@ -136,15 +136,6 @@ class Register extends React.Component {
                         </Text>
                         <Input
                           placeholder="example@noit.eu..."
-                          iconContent={
-                            <Icon
-                              size={16}
-                              color={nutriTheme.COLORS.ICON}
-                              name="ic_mail_24px"
-                              family="NutriExtra"
-                              style={styles.inputIcons}
-                            />
-                          }
                           style={{
                             borderRadius: 12,
                             borderWidth: 2,
@@ -173,15 +164,6 @@ class Register extends React.Component {
                           value={this.state.password}
                           password
                           placeholder="Поне 6 символа..."
-                          iconContent={
-                            <Icon
-                              size={16}
-                              color={nutriTheme.COLORS.ICON}
-                              name="padlock-unlocked"
-                              family="NutriExtra"
-                              style={styles.inputIcons}
-                            />
-                          }
                         />
                         {this.state.errorMessage && (
                           <Text style={{ color: "red" }}>
