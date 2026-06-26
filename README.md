@@ -61,9 +61,9 @@ EXPO_PUBLIC_OPENAI_API_KEY=your_openai_api_key
 
 ### `database/connection.js`
 
-Firebase client SDK configuration. This file must be created locally. In EAS cloud builds, the `EXPO_PUBLIC_FIREBASE_CONFIG` environment variable is used instead (see [Environment Variables](#environment-variables)).
+Firebase client SDK configuration. This file is gitignored and must be created locally before running the project.
 
-Create the file with the following structure, filling in your real values from the Firebase Console:
+**Local development** - use the fallback version, filling in your real values from the Firebase Console:
 
 ```js
 const raw = process.env.EXPO_PUBLIC_FIREBASE_CONFIG;
@@ -82,8 +82,19 @@ export const firebaseConfig = raw
     };
 ```
 
-- **Locally** - `EXPO_PUBLIC_FIREBASE_CONFIG` is not set, so the hardcoded fallback values are used.
-- **EAS builds** - `EXPO_PUBLIC_FIREBASE_CONFIG` is set as an EAS secret, so the fallback is ignored.
+**EAS builds (production)** - the committed version throws an error if the secret is missing, ensuring the build fails if using wrong credentials:
+
+```js
+const raw = process.env.EXPO_PUBLIC_FIREBASE_CONFIG;
+
+if (!raw) {
+  throw new Error("EXPO_PUBLIC_FIREBASE_CONFIG is not defined");
+}
+
+export const firebaseConfig = JSON.parse(raw);
+```
+
+Before triggering an EAS build, swap to this version. Before local development, swap back to the fallback version. Neither version should ever be committed with real credential values exposed.
 
 ---
 
