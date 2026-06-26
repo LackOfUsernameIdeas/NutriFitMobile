@@ -63,7 +63,7 @@ EXPO_PUBLIC_OPENAI_API_KEY=your_openai_api_key
 
 Firebase client SDK configuration. This file is gitignored and must be created locally before running the project.
 
-**Local development** — use the fallback version, filling in your real values from the Firebase Console:
+**Local development** - use the fallback version, filling in your real values from the Firebase Console:
 
 ```js
 const raw = process.env.EXPO_PUBLIC_FIREBASE_CONFIG;
@@ -82,7 +82,7 @@ export const firebaseConfig = raw
     };
 ```
 
-**EAS builds (production)** — the committed version throws if the secret is missing, ensuring the build fails loudly rather than silently using wrong credentials:
+**EAS builds (production)** - the committed version throws if the secret is missing, ensuring the build fails loudly rather than silently using wrong credentials:
 
 ```js
 const raw = process.env.EXPO_PUBLIC_FIREBASE_CONFIG;
