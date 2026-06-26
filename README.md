@@ -60,24 +60,6 @@ EXPO_PUBLIC_FIREBASE_CONFIG={"apiKey":"your_firebase_api_key","authDomain":"your
 
 > **Note:** The Firebase config must be a single-line JSON string with no wrapping quotes - this is how Metro's static substitution correctly inlines it at bundle time.
 
-### `database/connection.js`
-
-Firebase client SDK configuration. This file is gitignored and must be created locally before running the project.
-
-**Local development:**
-
-```js
-const raw = process.env.EXPO_PUBLIC_FIREBASE_CONFIG;
-
-if (!raw) {
-  throw new Error("EXPO_PUBLIC_FIREBASE_CONFIG is not defined");
-}
-
-export const firebaseConfig = JSON.parse(raw);
-```
-
-**EAS builds (production)** - same file, no changes needed. The `.env` is not used in EAS builds; secrets are managed via `eas env:create` instead (see [Environment Variables](#environment-variables)).
-
 ---
 
 ## Local Development
