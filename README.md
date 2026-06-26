@@ -82,7 +82,7 @@ export const firebaseConfig = raw
     };
 ```
 
-**EAS builds (production)** - the committed version throws if the secret is missing, ensuring the build fails loudly rather than silently using wrong credentials:
+**EAS builds (production)** - the committed version throws an error if the secret is missing, ensuring the build fails loudly rather than silently using wrong credentials:
 
 ```js
 const raw = process.env.EXPO_PUBLIC_FIREBASE_CONFIG;
