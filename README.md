@@ -53,36 +53,18 @@ These files are excluded from version control and must exist locally before runn
 
 ### `.env`
 
-Used for local development only. Not used in EAS cloud builds - secrets are managed via `eas env:create` instead (see [Environment Variables](#environment-variables)).
-
 ```env
 EXPO_PUBLIC_OPENAI_API_KEY=your_openai_api_key
+EXPO_PUBLIC_FIREBASE_CONFIG={"apiKey":"your_firebase_api_key","authDomain":"your_project.firebaseapp.com","databaseURL":"https://your_project-default-rtdb.firebaseio.com","projectId":"your_project_id","storageBucket":"your_project.appspot.com","messagingSenderId":"your_messaging_sender_id","appId":"your_app_id","measurementId":"your_measurement_id"}
 ```
+
+> **Note:** The Firebase config must be a single-line JSON string with no wrapping quotes — this is how Metro's static substitution correctly inlines it at bundle time.
 
 ### `database/connection.js`
 
 Firebase client SDK configuration. This file is gitignored and must be created locally before running the project.
 
-**Local development** - use the fallback version, filling in your real values from the Firebase Console:
-
-```js
-const raw = process.env.EXPO_PUBLIC_FIREBASE_CONFIG;
-
-export const firebaseConfig = raw
-  ? JSON.parse(raw)
-  : {
-      apiKey: "your_firebase_api_key",
-      authDomain: "your_project.firebaseapp.com",
-      databaseURL: "https://your_project-default-rtdb.firebaseio.com",
-      projectId: "your_project_id",
-      storageBucket: "your_project.appspot.com",
-      messagingSenderId: "your_messaging_sender_id",
-      appId: "your_app_id",
-      measurementId: "your_measurement_id"
-    };
-```
-
-**EAS builds (production)** - the committed version throws an error if the secret is missing, ensuring the build fails if using wrong credentials:
+**Local development:**
 
 ```js
 const raw = process.env.EXPO_PUBLIC_FIREBASE_CONFIG;
@@ -94,7 +76,7 @@ if (!raw) {
 export const firebaseConfig = JSON.parse(raw);
 ```
 
-Before triggering an EAS build, swap to this version. Before local development, swap back to the fallback version. Neither version should ever be committed with real credential values exposed.
+**EAS builds (production)** — same file, no changes needed. The `.env` is not used in EAS builds; secrets are managed via `eas env:create` instead (see [Environment Variables](#environment-variables)).
 
 ---
 
@@ -186,13 +168,7 @@ There are two separate environments for variables: **local development** and **E
 
 ### Local development
 
-Create a `.env` file in the project root (gitignored):
-
-```env
-EXPO_PUBLIC_OPENAI_API_KEY=your_openai_api_key
-```
-
-Firebase config for local development lives in `database/connection.js` (also gitignored) as a hardcoded fallback - no `.env` entry needed locally for Firebase.
+Create a `.env` file in the project root (gitignored) — see [Gitignored Configuration Files](#gitignored-configuration-files) for the expected format.
 
 ### EAS cloud builds
 
