@@ -58,7 +58,7 @@ EXPO_PUBLIC_OPENAI_API_KEY=your_openai_api_key
 EXPO_PUBLIC_FIREBASE_CONFIG={"apiKey":"your_firebase_api_key","authDomain":"your_project.firebaseapp.com","databaseURL":"https://your_project-default-rtdb.firebaseio.com","projectId":"your_project_id","storageBucket":"your_project.appspot.com","messagingSenderId":"your_messaging_sender_id","appId":"your_app_id","measurementId":"your_measurement_id"}
 ```
 
-> **Note:** The Firebase config must be a single-line JSON string with no wrapping quotes — this is how Metro's static substitution correctly inlines it at bundle time.
+> **Note:** The Firebase config must be a single-line JSON string with no wrapping quotes - this is how Metro's static substitution correctly inlines it at bundle time.
 
 ### `database/connection.js`
 
@@ -76,7 +76,7 @@ if (!raw) {
 export const firebaseConfig = JSON.parse(raw);
 ```
 
-**EAS builds (production)** — same file, no changes needed. The `.env` is not used in EAS builds; secrets are managed via `eas env:create` instead (see [Environment Variables](#environment-variables)).
+**EAS builds (production)** - same file, no changes needed. The `.env` is not used in EAS builds; secrets are managed via `eas env:create` instead (see [Environment Variables](#environment-variables)).
 
 ---
 
@@ -168,7 +168,7 @@ There are two separate environments for variables: **local development** and **E
 
 ### Local development
 
-Create a `.env` file in the project root (gitignored) — see [Gitignored Configuration Files](#gitignored-configuration-files) for the expected format.
+Create a `.env` file in the project root (gitignored) - see [Gitignored Configuration Files](#gitignored-configuration-files) for the expected format.
 
 ### EAS cloud builds
 
