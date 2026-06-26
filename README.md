@@ -10,6 +10,7 @@
 - [Tech Stack](#tech-stack)
 - [Gitignored Configuration Files](#gitignored-configuration-files)
 - [Local Development](#local-development)
+- [Building for Distribution](#building-for-distribution)
 
 ---
 
@@ -41,7 +42,7 @@ Node.js, Vertex AI (Gemini), Google Custom Search API
 
 **Tooling**
 
-Android Studio (Android emulator/build)
+Android Studio (Android emulator/build), EAS CLI (cloud builds)
 
 ---
 
@@ -102,3 +103,50 @@ npm run ios
 ```
 
 Alternatively, scan the QR code shown in Expo Dev Tools using the **Expo Go** app on your physical device.
+
+---
+
+## Building for Distribution
+
+Builds are handled via **EAS Build** (Expo Application Services), which compiles the app in the cloud without requiring a local Android Studio or Xcode setup.
+
+### 1. Install EAS CLI
+
+```bash
+npm install -g eas-cli
+```
+
+### 2. Log in to your Expo account
+
+```bash
+eas login
+```
+
+### 3. Configure EAS for the project (first time only)
+
+```bash
+eas build:configure
+```
+
+This generates an `eas.json` at the project root with build profiles (`development`, `preview`, `production`).
+
+### 4. Build an installable APK (Android)
+
+```bash
+eas build -p android --profile preview
+```
+
+The `preview` profile produces a standalone `.apk` that can be sideloaded directly onto any Android device — no Play Store required. Once the build completes, EAS prints a download link. You can also find all builds at:
+
+```
+https://expo.dev/accounts/<your-account>/projects/<your-project>/builds
+```
+
+### Build profiles
+
+| Profile      | Output | Use case                                           |
+| ------------ | ------ | -------------------------------------------------- |
+| `preview`    | `.apk` | Sideload directly onto Android devices for testing |
+| `production` | `.aab` | Upload to Google Play Store                        |
+
+> iOS builds require an Apple Developer account and produce an `.ipa` for beta testing or App Store distribution. Run `eas build -p ios --profile preview` on a machine with Xcode available.
