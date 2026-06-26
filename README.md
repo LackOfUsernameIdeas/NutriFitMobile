@@ -82,7 +82,7 @@ export const firebaseConfig = raw
     };
 ```
 
-**EAS builds (production)** - the committed version throws an error if the secret is missing, ensuring the build fails loudly rather than silently using wrong credentials:
+**EAS builds (production)** - the committed version throws an error if the secret is missing, ensuring the build fails if using wrong credentials:
 
 ```js
 const raw = process.env.EXPO_PUBLIC_FIREBASE_CONFIG;
@@ -94,7 +94,7 @@ if (!raw) {
 export const firebaseConfig = JSON.parse(raw);
 ```
 
-Before triggering an EAS build, swap to the throw version. Before local development, swap back to the fallback version. Neither version should ever be committed with real credential values hardcoded.
+Before triggering an EAS build, swap to this version. Before local development, swap back to the fallback version. Neither version should ever be committed with real credential values exposed.
 
 ---
 
