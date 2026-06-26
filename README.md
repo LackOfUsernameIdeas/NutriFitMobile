@@ -49,11 +49,11 @@ Android Studio (Android emulator/build), EAS CLI (cloud builds)
 
 ## Gitignored Configuration Files
 
-These files are excluded from version control and must exist locally before running the project. Templates below show the expected structure — fill in real values yourself.
+These files are excluded from version control and must exist locally before running the project. Templates below show the expected structure - fill in real values yourself.
 
 ### `.env`
 
-Used for local development only. Not used in EAS cloud builds — secrets are managed via `eas env:create` instead (see [Environment Variables](#environment-variables)).
+Used for local development only. Not used in EAS cloud builds - secrets are managed via `eas env:create` instead (see [Environment Variables](#environment-variables)).
 
 ```env
 EXPO_PUBLIC_OPENAI_API_KEY=your_openai_api_key
@@ -82,8 +82,8 @@ export const firebaseConfig = raw
     };
 ```
 
-- **Locally** — `EXPO_PUBLIC_FIREBASE_CONFIG` is not set, so the hardcoded fallback values are used.
-- **EAS builds** — `EXPO_PUBLIC_FIREBASE_CONFIG` is set as an EAS secret, so the fallback is ignored.
+- **Locally** - `EXPO_PUBLIC_FIREBASE_CONFIG` is not set, so the hardcoded fallback values are used.
+- **EAS builds** - `EXPO_PUBLIC_FIREBASE_CONFIG` is set as an EAS secret, so the fallback is ignored.
 
 ---
 
@@ -152,7 +152,7 @@ EAS cloud builds do not have access to your local `.env` file or gitignored file
 eas build -p android --profile preview
 ```
 
-The `preview` profile produces a standalone `.apk` that can be sideloaded directly onto any Android device — no Play Store required. Once the build completes, EAS prints a download link. You can also find all builds at:
+The `preview` profile produces a standalone `.apk` that can be sideloaded directly onto any Android device - no Play Store required. Once the build completes, EAS prints a download link. You can also find all builds at:
 
 ```
 https://expo.dev/accounts/<your-account>/projects/<your-project>/builds
@@ -181,7 +181,7 @@ Create a `.env` file in the project root (gitignored):
 EXPO_PUBLIC_OPENAI_API_KEY=your_openai_api_key
 ```
 
-Firebase config for local development lives in `database/connection.js` (also gitignored) as a hardcoded fallback — no `.env` entry needed locally for Firebase.
+Firebase config for local development lives in `database/connection.js` (also gitignored) as a hardcoded fallback - no `.env` entry needed locally for Firebase.
 
 ### EAS cloud builds
 
