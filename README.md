@@ -11,6 +11,7 @@
 - [Gitignored Configuration Files](#gitignored-configuration-files)
 - [Local Development](#local-development)
 - [Building for Distribution](#building-for-distribution)
+- [Environment Variables](#environment-variables)
 
 ---
 
@@ -52,26 +53,37 @@ These files are excluded from version control and must exist locally before runn
 
 ### `.env`
 
+Used for local development only. Not used in EAS cloud builds — secrets are managed via `eas env:create` instead (see [Environment Variables](#environment-variables)).
+
 ```env
 EXPO_PUBLIC_OPENAI_API_KEY=your_openai_api_key
 ```
 
 ### `database/connection.js`
 
-Firebase client SDK configuration. Obtain it from the Firebase Console and fill in the `firebaseConfig` object:
+Firebase client SDK configuration. This file must be created locally. In EAS cloud builds, the `EXPO_PUBLIC_FIREBASE_CONFIG` environment variable is used instead (see [Environment Variables](#environment-variables)).
+
+Create the file with the following structure, filling in your real values from the Firebase Console:
 
 ```js
-export const firebaseConfig = {
-  apiKey: "your_firebase_api_key",
-  authDomain: "your_project.firebaseapp.com",
-  databaseURL: "https://your_project-default-rtdb.firebaseio.com",
-  projectId: "your_project_id",
-  storageBucket: "your_project.appspot.com",
-  messagingSenderId: "your_messaging_sender_id",
-  appId: "your_app_id",
-  measurementId: "your_measurement_id"
-};
+const raw = process.env.EXPO_PUBLIC_FIREBASE_CONFIG;
+
+export const firebaseConfig = raw
+  ? JSON.parse(raw)
+  : {
+      apiKey: "your_firebase_api_key",
+      authDomain: "your_project.firebaseapp.com",
+      databaseURL: "https://your_project-default-rtdb.firebaseio.com",
+      projectId: "your_project_id",
+      storageBucket: "your_project.appspot.com",
+      messagingSenderId: "your_messaging_sender_id",
+      appId: "your_app_id",
+      measurementId: "your_measurement_id"
+    };
 ```
+
+- **Locally** — `EXPO_PUBLIC_FIREBASE_CONFIG` is not set, so the hardcoded fallback values are used.
+- **EAS builds** — `EXPO_PUBLIC_FIREBASE_CONFIG` is set as an EAS secret, so the fallback is ignored.
 
 ---
 
@@ -130,7 +142,11 @@ eas build:configure
 
 This generates an `eas.json` at the project root with build profiles (`development`, `preview`, `production`).
 
-### 4. Build an installable APK (Android)
+### 4. Set up EAS environment variables (first time only)
+
+EAS cloud builds do not have access to your local `.env` file or gitignored files. All secrets must be added to EAS manually. See [Environment Variables](#environment-variables) for the full list of required variables and the commands to add them.
+
+### 5. Build an installable APK (Android)
 
 ```bash
 eas build -p android --profile preview
@@ -150,3 +166,65 @@ https://expo.dev/accounts/<your-account>/projects/<your-project>/builds
 | `production` | `.aab` | Upload to Google Play Store                        |
 
 > iOS builds require an Apple Developer account and produce an `.ipa` for beta testing or App Store distribution. Run `eas build -p ios --profile preview` on a machine with Xcode available.
+
+---
+
+## Environment Variables
+
+There are two separate environments for variables: **local development** and **EAS cloud builds**. They are managed differently.
+
+### Local development
+
+Create a `.env` file in the project root (gitignored):
+
+```env
+EXPO_PUBLIC_OPENAI_API_KEY=your_openai_api_key
+```
+
+Firebase config for local development lives in `database/connection.js` (also gitignored) as a hardcoded fallback — no `.env` entry needed locally for Firebase.
+
+### EAS cloud builds
+
+EAS builds run on Expo's servers and have no access to your local `.env` or gitignored files. Secrets must be added via the EAS CLI once per environment. The `preview` profile uses the `preview` environment.
+
+To view currently set variables:
+
+```bash
+eas env:list --environment preview --include-sensitive
+```
+
+To add a variable:
+
+```bash
+eas env:create preview --name VARIABLE_NAME --visibility sensitive
+```
+
+#### Required EAS variables
+
+| Variable                      | Description                                         |
+| ----------------------------- | --------------------------------------------------- |
+| `EXPO_PUBLIC_OPENAI_API_KEY`  | OpenAI API key for AI meal plan generation          |
+| `EXPO_PUBLIC_FIREBASE_CONFIG` | Firebase client config as a JSON string (see below) |
+
+#### Setting `EXPO_PUBLIC_FIREBASE_CONFIG`
+
+Run the command and paste the JSON when prompted:
+
+```bash
+eas env:create preview --name EXPO_PUBLIC_FIREBASE_CONFIG --visibility sensitive
+```
+
+The expected JSON shape:
+
+```json
+{
+  "apiKey": "your_firebase_api_key",
+  "authDomain": "your_project.firebaseapp.com",
+  "databaseURL": "https://your_project-default-rtdb.firebaseio.com",
+  "projectId": "your_project_id",
+  "storageBucket": "your_project.appspot.com",
+  "messagingSenderId": "your_messaging_sender_id",
+  "appId": "your_app_id",
+  "measurementId": "your_measurement_id"
+}
+```
