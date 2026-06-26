@@ -1,5 +1,6 @@
 import React, { Component } from "react";
 import { Text, StyleSheet, View, Pressable } from "react-native";
+import InfoBoxMacroNutrients from "../components/InfoBoxMacroNutrients";
 
 class MacroNutrients extends Component {
   constructor(props) {
@@ -68,7 +69,10 @@ class MacroNutrients extends Component {
 
     return (
       <View style={styles.container}>
-        <Text style={styles.header}>Изберете тип диета:</Text>
+        <View style={styles.rowContainer}>
+          <Text style={styles.header}>Изберете тип диета:</Text>
+          <InfoBoxMacroNutrients title="Видове диети" isForMacroNutrients />
+        </View>
         <View style={styles.table}>
           {tableData.map((item, index) => (
             <Pressable
@@ -105,9 +109,14 @@ class MacroNutrients extends Component {
 const styles = StyleSheet.create({
   container: {
     marginBottom: 18,
-    flex: 1,
     marginTop: 10,
     marginHorizontal: 20
+  },
+  rowContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 5,
+    marginBottom: 10
   },
   header: {
     fontSize: 20,
@@ -124,9 +133,7 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: "black",
     paddingVertical: 10,
-    paddingHorizontal: 5,
-    borderColor: "transparent", // Add this line
-    borderWidth: 2
+    paddingHorizontal: 5
   },
   pressedRow: {
     opacity: 0.5
@@ -135,6 +142,7 @@ const styles = StyleSheet.create({
     borderBottomWidth: 3,
     borderBottomColor: "#9a99ff",
     borderColor: "#9a99ff",
+    borderWidth: 2,
     backgroundColor: "#CFD2DB"
   },
   cell: {

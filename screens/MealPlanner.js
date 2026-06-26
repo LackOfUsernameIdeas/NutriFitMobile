@@ -7,8 +7,9 @@ import {
   TextInput,
   ActivityIndicator
 } from "react-native";
-import { Block, Text } from "galio-framework";
+import { Block, Text, Checkbox } from "galio-framework";
 import RecipeWidget from "../components/RecipeWidget";
+import { HSeparator } from "../components/Separator";
 import { getAuth } from "firebase/auth";
 import DailyCalorieRequirements from "./DailyCalorieRequirements";
 import { Card } from "../components";
@@ -17,7 +18,10 @@ import MacroNutrients from "./MacroNutrients";
 import CuisineDropdown from "../components/Dropdown";
 import { Ionicons } from "@expo/vector-icons";
 import { savePreferences, saveMealPlan } from "../database/setFunctions";
+import { fetchFavouriteMealsForUser } from "../database/getFunctions";
 import Deviations from "./Deviations";
+import InfoBoxLevels from "../components/InfoBoxLevels";
+import FavoriteMealsModal from "../components/FavouriteMealsModal";
 
 class MealPlanner extends React.Component {
   constructor(props) {
@@ -50,7 +54,10 @@ class MealPlanner extends React.Component {
       isLoading: false,
       isDailyCaloryLoading: true,
       currentPage: 0,
-      itemsPerPage: 5
+      itemsPerPage: 5,
+      useFavoritesForPlan: false,
+      showFavouriteMeals: false,
+      favoriteMealsList: ""
     };
   }
 
@@ -63,7 +70,7 @@ class MealPlanner extends React.Component {
       // Проверява дали има активен потребител.
       if (user) {
         // Актуализира се състоянието с текущия потребител.
-        this.setState({ currentUser: user });
+        this.setState({ currentUser: user }, this.loadFavouriteMeals);
       } else {
         // В случай на липса на потребител, състоянието се актуализира до нулево.
         this.setState({ currentUser: null });
@@ -123,11 +130,8 @@ class MealPlanner extends React.Component {
    */
   fetchData = async () => {
     try {
-      // Извличане на уникалния идентификационен номер на текущия потребител.
       const uid = this.state.currentUser.uid;
-      // Генериране на текущата дата във формат ISO и извличане на само датата.
       const date = new Date().toISOString().slice(0, 10);
-      // Изпращане на POST заявка към NutriFit API със зададени хедъри и body на заявката.
       const response = await fetch(
         "https://nutri-api.noit.eu/weightStatsAndMealPlanner",
         {
@@ -143,16 +147,12 @@ class MealPlanner extends React.Component {
         }
       );
 
-      // Проверка за успешен отговор от сървъра.
       if (!response.ok) {
-        // В случай на неуспешна заявка, генерира се грешка.
         throw new Error("Failed to fetch weight stats");
       }
 
-      // Извличане на данните от отговора в JSON формат.
       const weightStatsData = await response.json();
 
-      // Актуализиране на състоянието с получените данни.
       this.setState({
         userData: {
           gender: weightStatsData.userDataSaveable.gender,
@@ -180,17 +180,10 @@ class MealPlanner extends React.Component {
         isDailyCaloryLoading: false
       });
     } catch (error) {
-      // В случай на грешка при извличането на данни, извеждане на съобщение за грешка в конзолата.
       console.error("Error fetching weight stats:", error);
     }
   };
 
-  /**
-   * Изчислява препоръчителната цел за тегло на потребителя.
-   * @param {Object} differenceFromPerfectWeight - Обект, съдържащ разликата от идеалното тегло и информация дали потребителят е под или над нормата.
-   * @returns {string} - Препоръчителната цел за тегло, в килограми.
-   * @throws {Error} - Грешка при невъзможност за изчисляване на препоръчителната цел.
-   */
   calculateRecommendedGoal = (differenceFromPerfectWeight) => {
     const difference = differenceFromPerfectWeight.difference;
     const underOrAbove = differenceFromPerfectWeight.isUnderOrAbove;
@@ -208,11 +201,6 @@ class MealPlanner extends React.Component {
     return recommendedGoal + " (кг.)";
   };
 
-  /**
-   * Обработва входните данни от потребителя.
-   * @param {string} key - Ключът на входните данни.
-   * @param {string|number} value - Стойността на входните данни.
-   */
   handleInputChange = (key, value) => {
     if (
       key === "Calories" ||
@@ -238,21 +226,11 @@ class MealPlanner extends React.Component {
     }
   };
 
-  /**
-   * Обработва избора на цел от страна на потребителя.
-   * @param {string} goal - Избраната цел от потребителя.
-   */
   handleGoalSelect = (goal) => {
-    // Актуализира се състоянието с избраната цел.
     this.setState({ selectedGoal: goal });
   };
 
-  /**
-   * Обработва избора на калории от потребителя.
-   * @param {number} calories - Избраните калории от потребителя.
-   */
   handleSelectedCalories = (calories) => {
-    // Актуализира се състоянието с избраните калории.
     this.setState((prevState) => ({
       userPreferences: {
         ...prevState.userPreferences,
@@ -261,15 +239,7 @@ class MealPlanner extends React.Component {
     }));
   };
 
-  /**
-   * Обработва избора на диета от страна на потребителя.
-   * @param {number} protein - Избраното количество протеини от потребителя.
-   * @param {number} fat - Избраното количество мазнини от потребителя.
-   * @param {number} carbs - Избраното количество въглехидрати от потребителя.
-   * @param {string} dietName - Името на избраната диета от потребителя.
-   */
   handleSelectedDiet = (protein, fat, carbs, dietName) => {
-    // Актуализира се състоянието с избраната диета.
     this.setState((prevState) => ({
       userPreferences: {
         ...prevState.userPreferences,
@@ -290,6 +260,24 @@ class MealPlanner extends React.Component {
     }));
   };
 
+  toggleFavouriteMeals = () =>
+    this.setState({ showFavouriteMeals: !this.state.showFavouriteMeals });
+  handleFavoritesCheckboxChange = () =>
+    this.setState({ useFavoritesForPlan: !this.state.useFavoritesForPlan });
+
+  loadFavouriteMeals = async () => {
+    try {
+      const userId = this.state.currentUser?.uid;
+      if (userId) {
+        const favoriteMeals = await fetchFavouriteMealsForUser(userId);
+        const formattedMealsList = favoriteMeals.join(", ");
+        this.setState({ favoriteMealsList: formattedMealsList });
+      }
+    } catch (error) {
+      console.error("Error fetching favorite meals:", error);
+    }
+  };
+
   render() {
     console.log("userPreferences: ", this.state.userPreferences);
 
@@ -301,11 +289,6 @@ class MealPlanner extends React.Component {
       French: "Френска"
     };
 
-    /**
-     * Превежда кухнята от английски на български.
-     * @param {string|string[]} englishCuisine - Кухнята или кухните, които трябва да бъдат преведени.
-     * @returns {string|string[]} - Преведената кухня или кухните.
-     */
     translateCuisine = (englishCuisine) => {
       if (Array.isArray(englishCuisine)) {
         return englishCuisine.map(
@@ -316,14 +299,12 @@ class MealPlanner extends React.Component {
       }
     };
 
-    // Превеждане на предпочитаната кухня на потребителя и извеждане на преведената информация в конзолата.
     const translatedCuisine = translateCuisine(
       this.state.userPreferences.Cuisine
     );
 
     let promptCuisine;
 
-    // Генериране на фразата за предпочитаната кухня на потребителя.
     if (Array.isArray(translatedCuisine)) {
       promptCuisine = translatedCuisine.join(", ");
     } else {
@@ -332,7 +313,6 @@ class MealPlanner extends React.Component {
     console.log("TRANSLATED --->", promptCuisine);
     let cuisinePhrase;
 
-    // Генериране на фразата за предпочитаната кухня на потребителя.
     if (Array.isArray(this.state.userPreferences.Cuisine)) {
       if (this.state.userPreferences.Cuisine.length === 0) {
         cuisinePhrase = "всяка";
@@ -346,63 +326,67 @@ class MealPlanner extends React.Component {
     }
     console.log("cuisinePhrase --->", cuisinePhrase);
 
-    // промпт за OpenAI и Gemini.
     const prompt = `Вие сте опитен диетолог, който наблюдава пациентите да консумират само ядлива и традиционна храна от
-      ${cuisinePhrase} кухня/кухни (${promptCuisine}). Фокусирайте се върху създаването на ТОЧЕН, разнообразен и вкусен дневен хранителен план, съставен от следните ограничения: калории (${
+    ${cuisinePhrase} кухня/кухни (${promptCuisine}). Фокусирайте се върху създаването на ТОЧЕН, разнообразен и вкусен дневен хранителен план, съставен от следните ограничения: калории (${
+      this.state.userPreferences.Calories
+    }), протеин (${this.state.userPreferences.Protein}), мазнини (${
+      this.state.userPreferences.Fat
+    }) и въглехидрати (${
+      this.state.userPreferences.Carbohydrates
+    }). Никога не превишавайте или намалявайте предоставените лимити и се УВЕРЕТЕ, че калориите и мазнините ВИНАГИ са същите като предоставените лимити. 
+      Осигурете точността на количествата, като същевременно се придържате към лимитите. 
+    ${
+      this.state.useFavoritesForPlan
+        ? `Уверете се, че при генериране използвате САМО тези храни: ${this.state.favoriteMealsList} `
+        : "Уверете се, че предоставените от вас хранения се различават от тези, които сте предоставили в предишни заявки. Давай винаги нови и вкусни храни, така че винаги да се създаде уникално и разнообразно меню."
+    }
+      Експортирайте в JSON ТОЧНО КАТО ПРЕДОСТАВЕНАТА СТРУКТУРА в съдържанието на този заявка, без да добавяте 'json' ключова дума с обратни кавички. 
+      Отговорът трябва да бъде чист JSON, нищо друго. Това означава, че вашият отговор не трябва да започва с 'json*backticks*{data}*backticks*' или '*backticks*{data}*backticks*'.
+      Създайте ми дневно меню с ниско съдържание на мазнини, включващо едно ястие за закуска, три за обяд (третото трябва да е десерт) и две за вечеря (второто да бъде десерт). 
+      Менюто трябва стриктно да спазва следните лимити: да съдържа ${
         this.state.userPreferences.Calories
-      }), протеин (${this.state.userPreferences.Protein}), мазнини (${
+      } калории, ${this.state.userPreferences.Protein} грама протеин, ${
         this.state.userPreferences.Fat
-      }) и въглехидрати (${
+      } грама мазнини и ${
         this.state.userPreferences.Carbohydrates
-      }). Никога не превишавайте или намалявайте предоставените лимити и се УВЕРЕТЕ, че калориите и мазнините ВИНАГИ са същите като предоставените лимити.
-        Осигурете точността на количествата, като същевременно се придържате към лимитите.
-        Уверете се, че предоставените от вас хранения се различават от тези, които сте предоставили в предишни заявки. Давай винаги нови и вкусни храни, така че винаги да се създаде уникално и разнообразно меню.
-        Експортирайте в JSON ТОЧНО КАТО ПРЕДОСТАВЕНАТА СТРУКТУРА в съдържанието на този заявка, без да добавяте 'json' ключова дума с обратни кавички.
-        Отговорът трябва да бъде чист JSON, нищо друго. Това означава, че вашият отговор не трябва да започва с 'json*backticks*{data}*backticks*' или '*backticks*{data}*backticks*'.
-        Създайте ми дневно меню с ниско съдържание на мазнини, включващо едно ястие за закуска, три за обяд (третото трябва да е десерт) и две за вечеря (второто да бъде десерт).
-        Менюто трябва стриктно да спазва следните лимити: да съдържа ${
-          this.state.userPreferences.Calories
-        } калории, ${this.state.userPreferences.Protein} грама протеин, ${
-          this.state.userPreferences.Fat
-        } грама мазнини и ${
-          this.state.userPreferences.Carbohydrates
-        } грама въглехидрати.
-        НЕ Предоставяйте храни, които накрая имат значително по-малко количество калории, въглехидрати, протеин и мазнини в сравнение с посочените общи лимити (${
-          this.state.userPreferences.Calories
-        } калории, ${this.state.userPreferences.Protein} грама протеин, ${
-          this.state.userPreferences.Fat
-        } грама мазнини и ${
-          this.state.userPreferences.Carbohydrates
-        } грама въглехидрати) и НИКОГА, АБСОЛЮТНО НИКОГА не давай хранителен план, чийто сумирани стойности са с отклонение от лимитите на потребителя - 100 калории, 10 грама протеини, 20 грама въглехидрати, 10 грама мазнини. ДАВАЙ ВСЕКИ ПЪТ РАЗЛИЧНИ храни, а не еднакви или измислени рецепти.
-        Включвай само съществуващи в реалния свят храни в хранителния план. Предоставете точни мерки и точни стойности за калории, протеин, въглехидрати и мазнини за закуска, обяд, вечеря и общо. Включете само реалистични храни за консумация.
-        Подсигури рецепти за приготвянето на храните и нужните продукти(съставки) към всяко едно ястие. Направи рецептите и съставките, така че да се получи накрая точното количество, което ще се яде, не повече от това.
-        Имената на храните трябва да бъдат адекватно преведени и написани на български език и да са реални ястия за консумация.
-        ${
-          this.state.userPreferences.Exclude &&
-          `Добави всички останали условия към менюто, но се увери, че избягваш стриктно да включваш следните елементи в менюто на храните: ${this.state.userPreferences.Exclude}.
-          Съобрази се с начина на приготвяне и рецептите вече като имаш в предвид какво НЕ ТРЯБВА да се включва.`
-        }
-        Имената на храните трябва да са адекватно преведени и написани, така че да са съществуващи храни.
-        Форматирай общата информацията за калориите, протеина, въглехидратите и мазнините по следния начин И ВНИМАВАЙ ТЯ ДА НЕ Е РАЗЛИЧНА ОТ ОБЩАТА СТОЙНОСТ НА КАЛОРИИТЕ, ВЪГЛЕХИДРАТИТЕ, ПРОТЕИНА И МАЗНИНИТЕ НА ЯСТИЯТА: 'totals: {'calories': number,'protein': number,'fat': number,'carbohydrates': number,'grams':number}'.
-        Форматирай ЦЯЛАТА информация във валиден JSON точно така:
-        "'breakfast':{
-            'main':{'name':'string','totals':{'calories':number,'protein':number,'fat':number,'carbohydrates':number,'grams':number}, 'ingredients':['quantity ingredient','quantity ingredient','quantity ingredient','quantity ingredient','quantity ingredient'...], 'instructions':['1.string','2.string','3.string','4.string'...], 'recipeQuantity': number (in grams)}
-          },
-          'lunch':{
-            'appetizer':{'name':'string','totals':{'calories':number,'protein':number,'fat':number,'carbohydrates':number,'grams':number}, 'ingredients':['quantity ingredient','quantity ingredient','quantity ingredient','quantity ingredient','quantity ingredient'...], 'instructions':['1.string','2.string','3.string','4.string'...], 'recipeQuantity': number (in grams)},
-            'main':{'name':'string','totals':{'calories':number,'protein':number,'fat':number,'carbohydrates':number,'grams':number}, 'ingredients':['quantity ingredient','quantity ingredient','quantity ingredient','quantity ingredient','quantity ingredient'...], 'instructions':['1.string','2.string','3.string','4.string'...], 'recipeQuantity': number (in grams)},
-            'dessert':{'name':'string','totals':{'calories':number,'protein':number,'fat':number,'carbohydrates':number,'grams':number}, 'ingredients':['quantity ingredient','quantity ingredient','quantity ingredient','quantity ingredient','quantity ingredient'...], 'instructions':['1.string','2.string','3.string','4.string'...], 'recipeQuantity': number (in grams)}
-          },
-          'dinner':{
-            'main':{'name':'string','totals':{'calories':number,'protein':number,'fat':number,'carbohydrates':number,'grams':number}, 'ingredients':['quantity ingredient','quantity ingredient','quantity ingredient','quantity ingredient','quantity ingredient'...], 'instructions':['1.string','2.string','3.string','4.string'...], 'recipeQuantity': number (in grams)},
-            'dessert':{'name':'string','totals':{'calories':number,'protein':number,'fat':number,'carbohydrates':number,'grams':number}, 'ingredients':['quantity ingredient','quantity ingredient','quantity ingredient','quantity ingredient','quantity ingredient'...], 'instructions':['1.string','2.string','3.string','4.string'...], 'recipeQuantity': number (in grams)}
-          }`;
+      } грама въглехидрати. 
+      НЕ Предоставяйте храни, които накрая имат значително по-малко количество калории, въглехидрати, протеин и мазнини в сравнение с посочените общи лимити (${
+        this.state.userPreferences.Calories
+      } калории, ${this.state.userPreferences.Protein} грама протеин, ${
+        this.state.userPreferences.Fat
+      } грама мазнини и ${
+        this.state.userPreferences.Carbohydrates
+      } грама въглехидрати) и НИКОГА, АБСОЛЮТНО НИКОГА не давай хранителен план, чийто сумирани стойности са с отклонение от лимитите на потребителя - 100 калории, 10 грама протеини, 20 грама въглехидрати, 10 грама мазнини. ДАВАЙ ВСЕКИ ПЪТ РАЗЛИЧНИ храни, а не еднакви или измислени рецепти.
+      Включвай само съществуващи в реалния свят храни в хранителния план. Предоставете точни мерки и точни стойности за калории, протеин, въглехидрати и мазнини за закуска, обяд, вечеря и общо. Включете само реалистични храни за консумация. 
+      Подсигури рецепти за приготвянето на храните и нужните продукти(съставки) към всяко едно ястие. Направи рецептите и съставките, така че да се получи накрая точното количество, което ще се яде, не повече от това.
+      Имената на храните трябва да бъдат адекватно преведени и написани на български език и да са реални ястия за консумация. 
+      ${
+        this.state.userPreferences.Exclude &&
+        `Добави всички останали условия към менюто, но се увери, че избягваш стриктно да включваш следните елементи в менюто на храните: ${this.state.userPreferences.Exclude}. 
+        Съобрази се с начина на приготвяне и рецептите вече като имаш в предвид какво НЕ ТРЯБВА да се включва.`
+      }
+      Имената на храните трябва да са адекватно преведени и написани, така че да са съществуващи храни. 
+      Форматирай общата информацията за калориите, протеина, въглехидратите и мазнините по следния начин И ВНИМАВАЙ ТЯ ДА НЕ Е РАЗЛИЧНА ОТ ОБЩАТА СТОЙНОСТ НА КАЛОРИИТЕ, ВЪГЛЕХИДРАТИТЕ, ПРОТЕИНА И МАЗНИНИТЕ НА ЯСТИЯТА: 'totals: {'calories': number,'protein': number,'fat': number,'carbohydrates': number,'grams':number}'. 
+      Форматирай ЦЯЛАТА информация във валиден JSON точно така: 
+      "'breakfast':{
+          'main':{'name':'string','totals':{'calories':number,'protein':number,'fat':number,'carbohydrates':number,'grams':number}, 'ingredients':['quantity ingredient','quantity ingredient','quantity ingredient','quantity ingredient','quantity ingredient'...], 'instructions':['1.string','2.string','3.string','4.string'...], 'recipeQuantity': number (in grams)}
+        },
+        'lunch':{
+          'appetizer':{'name':'string','totals':{'calories':number,'protein':number,'fat':number,'carbohydrates':number,'grams':number}, 'ingredients':['quantity ingredient','quantity ingredient','quantity ingredient','quantity ingredient','quantity ingredient'...], 'instructions':['1.string','2.string','3.string','4.string'...], 'recipeQuantity': number (in grams)}, 
+          'main':{'name':'string','totals':{'calories':number,'protein':number,'fat':number,'carbohydrates':number,'grams':number}, 'ingredients':['quantity ingredient','quantity ingredient','quantity ingredient','quantity ingredient','quantity ingredient'...], 'instructions':['1.string','2.string','3.string','4.string'...], 'recipeQuantity': number (in grams)}, 
+          'dessert':{'name':'string','totals':{'calories':number,'protein':number,'fat':number,'carbohydrates':number,'grams':number}, 'ingredients':['quantity ingredient','quantity ingredient','quantity ingredient','quantity ingredient','quantity ingredient'...], 'instructions':['1.string','2.string','3.string','4.string'...], 'recipeQuantity': number (in grams)}
+        }, 
+        'dinner':{
+          'main':{'name':'string','totals':{'calories':number,'protein':number,'fat':number,'carbohydrates':number,'grams':number}, 'ingredients':['quantity ingredient','quantity ingredient','quantity ingredient','quantity ingredient','quantity ingredient'...], 'instructions':['1.string','2.string','3.string','4.string'...], 'recipeQuantity': number (in grams)}, 
+          'dessert':{'name':'string','totals':{'calories':number,'protein':number,'fat':number,'carbohydrates':number,'grams':number}, 'ingredients':['quantity ingredient','quantity ingredient','quantity ingredient','quantity ingredient','quantity ingredient'...], 'instructions':['1.string','2.string','3.string','4.string'...], 'recipeQuantity': number (in grams)}
+        }", като не превеждаш имената на нито едно property (ТЕ ТРЯБВА ДА СА САМО НА АНГЛИЙСКИ ЕЗИК). 
+      Съобрази се с подадената структура когато връщаш твоя отговор и където пише number, НЕ връщай string! Не добавяй излишни кавички или думи, JSON формата трябва да е валиден. 
+  
+  
+      Преведи САМО стойностите на БЪЛГАРСКИ, без нито едно property. Те трябва ЗАДЪЛЖИТЕЛНО да са на английски. 
+      Грамажът на ястията е ЗАДЪЛЖИТЕЛНА стойност, която НЕ трябва да е повече от 500 грама. Не включвай грамажа в името на ястието, а го дай САМО като стойност в totals. 
+      Името на ястието трябва да е ЗАДЪЛЖИТЕЛНО на български, а не на искапнски или друг език.`;
 
-    /**
-     * Проверява общите стойности в даден обект или масив от обекти.
-     * @param {Object|Object[]} obj - Обект или масив от обекти, които трябва да бъдат проверени.
-     * @throws {Error} - Генерира се грешка, ако стойностите в обекта не са числа.
-     */
     checkTotals = (obj) => {
       if (Array.isArray(obj)) {
         obj.forEach((item) => checkTotals(item));
@@ -416,7 +400,6 @@ class MealPlanner extends React.Component {
             }
           }
         }
-        // Рекурсивно проверява вложените обекти
         for (let key in obj) {
           checkTotals(obj[key]);
         }
@@ -431,12 +414,9 @@ class MealPlanner extends React.Component {
         jsonObject.dinner
       );
     };
-    /**
-     * Генерира план за хранене с помощта на OpenAI модел.
-     */
+
     generatePlanWithOpenAI = async () => {
       try {
-        // Актуализира състоянието, за да покаже, че планът се генерира с OpenAI модела и че заявката е в процес на обработка.
         this.setState({
           isPlanGeneratedWithOpenAI: true,
           isPlanGeneratedWithBgGPT: false,
@@ -444,9 +424,7 @@ class MealPlanner extends React.Component {
           isLoading: true
         });
         console.log("fetching openai");
-        // Key
         const secret = process.env.EXPO_PUBLIC_OPENAI_API_KEY;
-        // Изпраща заявка към OpenAI API за генериране на план за хранене.
         const response = await fetch(
           "https://api.openai.com/v1/chat/completions",
           {
@@ -468,7 +446,6 @@ class MealPlanner extends React.Component {
         );
 
         if (!response.ok) {
-          // Актуализира състоянието в случай на грешка при заявката към OpenAI API.
           this.setState({
             requestFailed: true
           });
@@ -477,7 +454,6 @@ class MealPlanner extends React.Component {
         console.log("res status: ", response.status, response.ok);
         const responseData = await response.json();
         const responseJson = responseData.choices[0].message.content;
-        // Декодира и обработва отговора от OpenAI API.
         const unescapedData = responseJson;
         console.log("unescapedData: ", unescapedData);
 
@@ -489,34 +465,21 @@ class MealPlanner extends React.Component {
 
         console.log("OPENAI: ", data);
 
-        // Филтрира обекта с данни за плана за хранене, като премахва стойностите за общи стойности (totals).
         const filteredArr = Object.fromEntries(
           Object.entries(data).filter(([key]) => key !== "totals")
         );
 
-        // Обект, който ще съдържа връзките към изображенията на ястията от плана за хранене.
         const mealPlanImagesData = {
-          breakfast: {
-            main: ""
-          },
-          lunch: {
-            appetizer: "",
-            main: "",
-            dessert: ""
-          },
-          dinner: {
-            main: "",
-            dessert: ""
-          }
+          breakfast: { main: "" },
+          lunch: { appetizer: "", main: "", dessert: "" },
+          dinner: { main: "", dessert: "" }
         };
 
-        // Обхождане на всяко ястие от плана и извършване на отделна заявка за генериране на изображение.
         for (const mealKey of Object.keys(filteredArr)) {
           const mealAppetizer = filteredArr[mealKey].appetizer;
           const mealMain = filteredArr[mealKey].main;
           const mealDessert = filteredArr[mealKey].dessert;
 
-          // Функция за извличане на изображение от името на ястието.
           async function fetchImage(name) {
             try {
               let response = await fetch(
@@ -540,7 +503,6 @@ class MealPlanner extends React.Component {
             }
           }
 
-          // Извличане на изображенията за апетитите, основните ястия и десертите.
           const imageAppetizer =
             mealKey === "lunch" ? await fetchImage(mealAppetizer.name) : null;
           const imageMain = await fetchImage(mealMain.name);
@@ -549,7 +511,6 @@ class MealPlanner extends React.Component {
               ? await fetchImage(mealDessert.name)
               : null;
 
-          // Обработка на отговорите за изображенията и актуализиране на състоянието с връзките към изображенията на ястията.
           const imageAppetizerResponseData =
             imageAppetizer !== null ? await imageAppetizer.json() : null;
           const imageMainResponseData = await imageMain.json();
@@ -580,14 +541,12 @@ class MealPlanner extends React.Component {
 
         console.log("mealPlanImagesData:", mealPlanImagesData);
 
-        // Актуализира състоянието с връзките към изображенията на ястията и плана за хранене, които са били генерирани с OpenAI модела.
         this.setState({
           mealPlanImages: mealPlanImagesData,
           mealPlan: data,
           isLoading: false
         });
       } catch (error) {
-        // Актуализира състоянието в случай на грешка при генериране на плана за хранене.
         this.setState({
           requestFailed: true,
           isLoading: false
@@ -596,12 +555,8 @@ class MealPlanner extends React.Component {
       }
     };
 
-    /**
-     * Генерира план за хранене с помощта на Gemini модел.
-     */
     generatePlanWithGemini = async () => {
       try {
-        // Актуализира състоянието, за да покаже, че планът се генерира с Gemini модела и че заявката е в процес на обработка.
         this.setState({
           isPlanGeneratedWithOpenAI: false,
           isPlanGeneratedWithGemini: true,
@@ -610,7 +565,6 @@ class MealPlanner extends React.Component {
         });
         console.log("PROMPT --->", prompt);
         console.log("fetching gemini");
-        // Изпраща заявка към NutriFit API за генериране на план за хранене с Gemini модела.
         const response = await fetch(
           "https://nutri-api.noit.eu/geminiGenerateResponse",
           {
@@ -647,30 +601,18 @@ class MealPlanner extends React.Component {
         }
 
         console.log("jsonObject: ", jsonObject);
-        // Обект, който ще съдържа връзките към изображенията на ястията от плана за хранене, генериран с Gemini модела.
         const mealPlanImagesData = {
-          breakfast: {
-            main: ""
-          },
-          lunch: {
-            appetizer: "",
-            main: "",
-            dessert: ""
-          },
-          dinner: {
-            main: "",
-            dessert: ""
-          }
+          breakfast: { main: "" },
+          lunch: { appetizer: "", main: "", dessert: "" },
+          dinner: { main: "", dessert: "" }
         };
 
-        // Обхождане на всяко ястие от плана и извършване на отделна заявка за генериране на изображение.
         for (const mealKey of Object.keys(jsonObject)) {
           if (mealKey !== "totals") {
             const mealAppetizer = jsonObject[mealKey].appetizer;
             const mealMain = jsonObject[mealKey].main;
             const mealDessert = jsonObject[mealKey].dessert;
 
-            // Функция за извличане на изображение от името на ястието.
             async function fetchImage(name) {
               try {
                 let response = await fetch(
@@ -694,7 +636,6 @@ class MealPlanner extends React.Component {
               }
             }
 
-            // Извличане на изображенията за апетитите, основните ястия и десертите.
             const imageAppetizer =
               mealKey === "lunch" ? await fetchImage(mealAppetizer.name) : null;
             const imageMain = await fetchImage(mealMain.name);
@@ -703,14 +644,11 @@ class MealPlanner extends React.Component {
                 ? await fetchImage(mealDessert.name)
                 : null;
 
-            // Обработка на отговорите за изображенията и актуализиране на състоянието с връзките към изображенията на ястията.
             const imageAppetizerResponseData =
               imageAppetizer !== null ? await imageAppetizer.json() : null;
             const imageMainResponseData = await imageMain.json();
             const imageDessertResponseData =
               imageDessert !== null ? await imageDessert.json() : null;
-
-            // console.log("imageDessert: ", imageDessert, mealKey);
 
             if (
               imageAppetizerResponseData !== null &&
@@ -735,14 +673,12 @@ class MealPlanner extends React.Component {
           }
         }
 
-        // Актуализира състоянието с връзките към изображенията на ястията и плана за хранене, които са били генерирани с Gemini модела.
         this.setState({
           mealPlanImages: mealPlanImagesData,
           mealPlan: jsonObject,
           isLoading: false
         });
       } catch (error) {
-        // Актуализира състоянието в случай на грешка при генериране на плана за хранене.
         this.setState({
           requestFailed: true,
           isLoading: false
@@ -751,29 +687,18 @@ class MealPlanner extends React.Component {
       }
     };
 
-    /**
-     * Отива към предходната страница в навигацията.
-     */
     goToPreviousPage = () => {
       this.setState((prevState) => ({
         currentPage: prevState.currentPage - 1
       }));
     };
 
-    /**
-     * Отива към следващата страница в навигацията.
-     */
     goToNextPage = () => {
       this.setState((prevState) => ({
         currentPage: prevState.currentPage + 1
       }));
     };
 
-    /**
-     * Превежда типа на ястието от английски на български.
-     * @param {string} mealType - Типа на ястието на английски.
-     * @returns {string} - Преведеният тип на ястието на български.
-     */
     translateMealType = (mealType) => {
       switch (mealType) {
         case "breakfast":
@@ -783,7 +708,7 @@ class MealPlanner extends React.Component {
         case "dinner":
           return "Вечеря";
         default:
-          return mealType; // Връща оригиналния тип на ястието, ако преводът не е наличен
+          return mealType;
       }
     };
 
@@ -811,7 +736,10 @@ class MealPlanner extends React.Component {
       <View style={styles.container}>
         <ScrollView contentContainerStyle={styles.scrollViewContent}>
           <Card>
-            <Text style={styles.title}>Изберете ниво на натовареност:</Text>
+            <View style={styles.rowContainer}>
+              <Text style={styles.title}>Изберете ниво на натовареност:</Text>
+              <InfoBoxLevels title="Нива на натовареност" />
+            </View>
             <View style={styles.buttonContainer}>
               {levels.map((level) => (
                 <TouchableOpacity
@@ -936,6 +864,70 @@ class MealPlanner extends React.Component {
                   </Text>
                 </TouchableOpacity>
               </View>
+              <HSeparator />
+              <>
+                {this.state.favoriteMealsList &&
+                  this.state.favoriteMealsList.trim() !== "" &&
+                  this.state.favoriteMealsList.split(", ").length >= 5 && (
+                    <Block>
+                      <Block
+                        style={{
+                          flexDirection: "row",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          padding: 10
+                        }}
+                      >
+                        <Text
+                          style={{
+                            marginRight: 10,
+                            flex: 1,
+                            fontSize: 16,
+                            color: "#333",
+                            fontWeight: "bold",
+                            textAlign: "center"
+                          }}
+                        >
+                          Създаване на хранителен план от вашите любими храни?
+                        </Text>
+                        <Checkbox
+                          style={{ marginLeft: 8 }}
+                          isChecked={this.state.useFavoritesForPlan}
+                          onChange={this.handleFavoritesCheckboxChange}
+                          color="#8c8bfc"
+                        />
+                      </Block>
+                    </Block>
+                  )}
+              </>
+              <Block
+                style={{
+                  alignItems: "center",
+                  justifyContent: "center"
+                }}
+              >
+                <Text
+                  my={
+                    !(this.state.favoriteMealsList.split(", ").length >= 5)
+                      ? 50
+                      : 25
+                  }
+                  color="rgba(135, 140, 189, 0.7)"
+                  fontSize={20}
+                  onPress={this.toggleFavouriteMeals}
+                  style={{
+                    textDecorationLine: "underline",
+                    fontWeight: "bold"
+                  }}
+                >
+                  Вижте вашите любими храни
+                </Text>
+              </Block>
+              <FavoriteMealsModal
+                showModal={this.state.showFavouriteMeals}
+                toggleModal={this.toggleFavouriteMeals}
+                favouriteMeals={this.state.favoriteMealsList}
+              />
             </Card>
           )}
           {Object.keys(this.state.mealPlan).map((mealType, index) => {
@@ -1045,6 +1037,11 @@ const styles = StyleSheet.create({
     padding: 10,
     marginBottom: 10
   },
+  rowContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 10
+  },
   buttonContainer: {
     flexDirection: "row",
     justifyContent: "space-between",
@@ -1057,6 +1054,9 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     justifyContent: "center",
     marginHorizontal: 5
+  },
+  activeButton: {
+    backgroundColor: "#7c6bff"
   },
   buttonText: {
     color: "white",
@@ -1072,7 +1072,7 @@ const styles = StyleSheet.create({
   title: {
     textAlign: "center",
     lineHeight: 19,
-    fontWeight: "bold", // Change fontWeight to "bold" for a heavier font
+    fontWeight: "bold",
     color: nutriTheme.COLORS.HEADER,
     margin: 10
   },
@@ -1084,7 +1084,7 @@ const styles = StyleSheet.create({
   dropdownLabel: {
     marginRight: 10,
     fontSize: 16,
-    color: "#000" // Set label text color to ensure visibility
+    color: "#000"
   },
   dropdownPicker: {
     flex: 1,
@@ -1092,11 +1092,11 @@ const styles = StyleSheet.create({
     borderColor: "gray",
     borderRadius: 15,
     padding: 10,
-    backgroundColor: "#fff" // Set a background color for better visibility
+    backgroundColor: "#fff"
   },
   pickerItem: {
-    fontSize: 16, // Adjust item font size for better visibility
-    color: "#000" // Set item text color to ensure visibility
+    fontSize: 16,
+    color: "#000"
   }
 });
 
