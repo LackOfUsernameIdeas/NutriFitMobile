@@ -125,7 +125,6 @@ class UserMeasurements extends React.Component {
 
       if (saveResult) {
         this.triggerFetchAndSaveAllData();
-        this.props.navigation.navigate("Home");
       }
     } catch (error) {
       console.error("Error generating stats:", error);

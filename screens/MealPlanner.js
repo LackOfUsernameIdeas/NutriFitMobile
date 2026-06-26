@@ -349,12 +349,12 @@ class MealPlanner extends React.Component {
     // промпт за OpenAI и Gemini.
     const prompt = `Вие сте опитен диетолог, който наблюдава пациентите да консумират само ядлива и традиционна храна от
       ${cuisinePhrase} кухня/кухни (${promptCuisine}). Фокусирайте се върху създаването на ТОЧЕН, разнообразен и вкусен дневен хранителен план, съставен от следните ограничения: калории (${
-      this.state.userPreferences.Calories
-    }), протеин (${this.state.userPreferences.Protein}), мазнини (${
-      this.state.userPreferences.Fat
-    }) и въглехидрати (${
-      this.state.userPreferences.Carbohydrates
-    }). Никога не превишавайте или намалявайте предоставените лимити и се УВЕРЕТЕ, че калориите и мазнините ВИНАГИ са същите като предоставените лимити.
+        this.state.userPreferences.Calories
+      }), протеин (${this.state.userPreferences.Protein}), мазнини (${
+        this.state.userPreferences.Fat
+      }) и въглехидрати (${
+        this.state.userPreferences.Carbohydrates
+      }). Никога не превишавайте или намалявайте предоставените лимити и се УВЕРЕТЕ, че калориите и мазнините ВИНАГИ са същите като предоставените лимити.
         Осигурете точността на количествата, като същевременно се придържате към лимитите.
         Уверете се, че предоставените от вас хранения се различават от тези, които сте предоставили в предишни заявки. Давай винаги нови и вкусни храни, така че винаги да се създаде уникално и разнообразно меню.
         Експортирайте в JSON ТОЧНО КАТО ПРЕДОСТАВЕНАТА СТРУКТУРА в съдържанието на този заявка, без да добавяте 'json' ключова дума с обратни кавички.
@@ -363,17 +363,17 @@ class MealPlanner extends React.Component {
         Менюто трябва стриктно да спазва следните лимити: да съдържа ${
           this.state.userPreferences.Calories
         } калории, ${this.state.userPreferences.Protein} грама протеин, ${
-      this.state.userPreferences.Fat
-    } грама мазнини и ${
-      this.state.userPreferences.Carbohydrates
-    } грама въглехидрати.
+          this.state.userPreferences.Fat
+        } грама мазнини и ${
+          this.state.userPreferences.Carbohydrates
+        } грама въглехидрати.
         НЕ Предоставяйте храни, които накрая имат значително по-малко количество калории, въглехидрати, протеин и мазнини в сравнение с посочените общи лимити (${
           this.state.userPreferences.Calories
         } калории, ${this.state.userPreferences.Protein} грама протеин, ${
-      this.state.userPreferences.Fat
-    } грама мазнини и ${
-      this.state.userPreferences.Carbohydrates
-    } грама въглехидрати) и НИКОГА, АБСОЛЮТНО НИКОГА не давай хранителен план, чийто сумирани стойности са с отклонение от лимитите на потребителя - 100 калории, 10 грама протеини, 20 грама въглехидрати, 10 грама мазнини. ДАВАЙ ВСЕКИ ПЪТ РАЗЛИЧНИ храни, а не еднакви или измислени рецепти.
+          this.state.userPreferences.Fat
+        } грама мазнини и ${
+          this.state.userPreferences.Carbohydrates
+        } грама въглехидрати) и НИКОГА, АБСОЛЮТНО НИКОГА не давай хранителен план, чийто сумирани стойности са с отклонение от лимитите на потребителя - 100 калории, 10 грама протеини, 20 грама въглехидрати, 10 грама мазнини. ДАВАЙ ВСЕКИ ПЪТ РАЗЛИЧНИ храни, а не еднакви или измислени рецепти.
         Включвай само съществуващи в реалния свят храни в хранителния план. Предоставете точни мерки и точни стойности за калории, протеин, въглехидрати и мазнини за закуска, обяд, вечеря и общо. Включете само реалистични храни за консумация.
         Подсигури рецепти за приготвянето на храните и нужните продукти(съставки) към всяко едно ястие. Направи рецептите и съставките, така че да се получи накрая точното количество, което ще се яде, не повече от това.
         Имената на храните трябва да бъдат адекватно преведени и написани на български език и да са реални ястия за консумация.
@@ -445,7 +445,7 @@ class MealPlanner extends React.Component {
         });
         console.log("fetching openai");
         // Key
-        const secret = process.env.SECRET_OPEN;
+        const secret = process.env.EXPO_PUBLIC_OPENAI_API_KEY;
         // Изпраща заявка към OpenAI API за генериране на план за хранене.
         const response = await fetch(
           "https://api.openai.com/v1/chat/completions",
@@ -456,7 +456,7 @@ class MealPlanner extends React.Component {
               Authorization: `Bearer ${secret}`
             },
             body: JSON.stringify({
-              model: "gpt-4-0125-preview",
+              model: "gpt-5.2",
               messages: [
                 {
                   role: "user",
@@ -474,15 +474,14 @@ class MealPlanner extends React.Component {
           });
           throw new Error("Failed to generate meal plan");
         }
-        console.log("res: ", response);
+        console.log("res status: ", response.status, response.ok);
         const responseData = await response.json();
         const responseJson = responseData.choices[0].message.content;
         // Декодира и обработва отговора от OpenAI API.
         const unescapedData = responseJson;
-        const escapedData = decodeURIComponent(unescapedData);
-        console.log("escapedData: ", escapedData);
+        console.log("unescapedData: ", unescapedData);
 
-        const data = JSON.parse(escapedData);
+        const data = JSON.parse(unescapedData);
 
         if (!isValidJson(data)) {
           throw new Error("Invalid JSON structure");
