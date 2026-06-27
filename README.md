@@ -158,7 +158,7 @@ Create a `.env` file in the project root (gitignored) - see [Gitignored Configur
 
 ### EAS cloud builds
 
-EAS builds run on Expo's servers and have no access to your local `.env` or gitignored files. Secrets must be added via the EAS CLI once per environment. The `preview` profile uses the `preview` environment.
+EAS builds run on Expo's servers and have no access to your local `.env` or gitignored files. Secrets must be added via the EAS CLI once per environment.
 
 To view currently set variables:
 
