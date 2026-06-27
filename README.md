@@ -37,13 +37,13 @@ NutriFitMobile/
 
 ## Tech Stack
 
-**Mobile App**
+**Mobile App**  
 React Native, Expo, Galio Framework, JavaScript, TypeScript, Firebase (Auth + Firestore), OpenAI API
 
-**Shared Backend (external, not included in this repository)**
+**Shared Backend (external, not included in this repository)**  
 Node.js, Vertex AI (Gemini), Google Custom Search API
 
-**Tooling**
+**Tooling**  
 Android Studio (Android emulator/build), EAS CLI (cloud builds)
 
 ---
