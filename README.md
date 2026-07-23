@@ -1,5 +1,7 @@
 # NutriFit Mobile
 
+[![Download APK](https://img.shields.io/badge/Download%20APK-7160fa?style=for-the-badge)](https://kaloyan-kostadinov.vercel.app/nutrifit/NutriFitMobile.apk)
+
 > **Mobile version of the NutriFit web platform**, built with **React Native (Expo) and the Galio Framework**, mirroring core web features for **AI-driven meal planning** with **GPT-5.2 and Gemini 3.5 Flash**. Tracks body metrics (BMI, body fat %, lean mass, ideal weight, daily calorie requirements, macronutrients) and lets users compare AI-generated meal plans against their personal limits, all synced through **Firebase Authentication and Firestore**
 
 ---
